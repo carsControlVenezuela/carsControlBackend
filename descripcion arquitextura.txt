@@ -1,0 +1,303 @@
+Dominio: Aquí vive la lógica de negocio pura, sin frameworks, sin bases de datos, sin HTTP. Si borras NestJS o TypeORM, 
+esto debe seguir funcionando conceptualmente.
+
+  domain/entities/: Representa los objetos del mundo real de tu negocio. No son tablas de base de datos, son conceptos. Tienen 
+  propiedades y pueden tener comportamiento propio. Ejemplo:
+  -------------------------------------------------------------------------------------
+      // domain/entities/StateEmployee.ts
+
+      export class StateEmployee {
+          constructor(
+              public readonly id: string,
+              public readonly name: string,       // ej: "Activo", "Inactivo", "Suspendido"
+              public readonly isActive: boolean,
+              public readonly createdAt: Date,
+          ) {}
+
+          // Comportamiento propio de la entidad (lógica de negocio)
+          isAvailableForAssignment(): boolean {
+              return this.isActive && this.name !== 'Suspendido';
+          }
+      }
+  -------------------------------------------------------------------------------------
+  domain/exceptions/: Errores semánticos del negocio. No son errores HTTP (eso es infraestructura), son situaciones inválidas 
+  según las reglas del dominio. Ejemplo:
+  -------------------------------------------------------------------------------------
+      // domain/exceptions/StateEmployeeNotFoundException.ts
+      export class StateEmployeeNotFoundException extends Error {
+          constructor(id: string) {
+              super(`El estado de empleado con id "${id}" no existe`);
+              this.name = 'StateEmployeeNotFoundException';
+          }
+      }
+  -------------------------------------------------------------------------------------
+
+  domain/repositories/: Son interfaces (contratos). Definen qué operaciones existen sobre los datos, pero no cómo se hacen. La im-
+  plementación real vive en infraestructura.
+  -------------------------------------------------------------------------------------
+    import { StateEmployee } from '../entities/StateEmployee';
+
+    export interface StateEmployeeRepository {
+      findById(id: string): Promise<StateEmployee | null>;
+      findAll(): Promise<StateEmployee[]>;
+      save(stateEmployee: StateEmployee): Promise<StateEmployee>;
+      update(stateEmployee: StateEmployee): Promise<StateEmployee>;
+      delete(id: string): Promise<void>;
+    }
+💡 -------------------------------------------------------------------------------------
+  El dominio define el contrato. La infraestructura lo cumple. Así el dominio nunca sabe si usas PostgreSQL, MongoDB o un array en 
+  memoria.
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Application: Orquesta el dominio para ejecutar acciones concretas del sistema. Cada caso de uso representa una sola acción 
+(crear, buscar, eliminar, etc.).
+
+  application/uses-cases: Un archivo por cada acción. Siguen el principio de Single Responsibility: cada clase hace exactamente una 
+  cosa.Ejemplo:
+  -------------------------------------------------------------------------------------
+    import { StateEmployeeRepository } from '../../domain/repositories/StateEmployeeRepository';
+    import { CreateStateEmployeeRequestDto } from '../dtos/requests/CreateStateEmployeeRequestDto';
+    import { StateEmployeeResponseDto } from '../dtos/responses/StateEmployeeResponseDto';
+    import { StateEmployeeAlreadyExistsException } from '../../domain/exceptions/StateEmployeeAlreadyExistsException';
+    import { StateEmployee } from '../../domain/entities/StateEmployee';
+    import { StateEmployeeMapper } from '../mappers/StateEmployeeMapper';
+
+    export class CreateStateEmployeeUseCase {
+      constructor(
+        private readonly repository: StateEmployeeRepository, // inyecta el contrato, no la implementación
+      ) {}
+
+      async execute(dto: CreateStateEmployeeRequestDto): Promise<StateEmployeeResponseDto> {
+        const existing = await this.repository.findByName(dto.name);
+        if (existing) throw new StateEmployeeAlreadyExistsException(dto.name);
+
+        const entity = new StateEmployee(
+          crypto.randomUUID(),
+          dto.name,
+          true,
+          new Date(),
+        );
+
+        const saved = await this.repository.save(entity);
+        return StateEmployeeMapper.toResponseDto(saved);
+      }
+    }
+  -------------------------------------------------------------------------------------
+  application/dtos/requests/: Los DTOs de request definen qué datos espera recibir el caso de uso. Son simples objetos de datos, 
+  sin lógica.Ejemplo:
+  -------------------------------------------------------------------------------------
+    export class CreateStateEmployeeRequestDto {
+      name: string;
+      description?: string;
+    }
+  -------------------------------------------------------------------------------------
+  application/dtos/responses/: Lo que el caso de uso devuelve hacia afuera. Nunca devuelves la entidad de dominio directamente, siem-
+  pre un DTO controlado.Ejemplo:
+  -------------------------------------------------------------------------------------
+    export class StateEmployeeResponseDto {
+      id: string;
+      name: string;
+      isActive: boolean;
+      createdAt: string; // ya formateado, no Date crudo
+    }
+  -------------------------------------------------------------------------------------
+  application/mappers/: Transforman datos entre capas. Evitan que las capas se acoplen entre sí.
+  -------------------------------------------------------------------------------------
+      import { StateEmployee } from '../../domain/entities/StateEmployee';
+      import { StateEmployeeResponseDto } from '../dtos/responses/StateEmployeeResponseDto';
+
+      export class StateEmployeeMapper {
+      static toResponseDto(entity: StateEmployee): StateEmployeeResponseDto {
+        return {
+          id: entity.id,
+          name: entity.name,
+          isActive: entity.isActive,
+          createdAt: entity.createdAt.toISOString(),
+        };
+      }
+    }
+  -------------------------------------------------------------------------------------
+  application/ports/:Interfaces para servicios externos que la aplicación necesita pero no implementa. Son el "puerto de salida" del 
+  hexágono. Ejemplo:
+  -------------------------------------------------------------------------------------
+    export interface NotificationPort {
+      sendStateChangeAlert(employeeId: string, newState: string): Promise<void>;
+    }
+  -------------------------------------------------------------------------------------
+💡 La implementación de estos puertos (ej: envío real de email, Slack, etc.) va en infraestructura.
+
+  application/helpers/: Funciones utilitarias específicas de la capa de aplicación. No son de negocio (eso va en domain) ni de HTTP 
+  (eso va en infraestructura).
+  -------------------------------------------------------------------------------------
+  export class PaginationHelper {
+    static paginate<T>(items: T[], page: number, limit: number): T[] {
+      const start = (page - 1) * limit;
+      return items.slice(start, start + limit);
+    }
+  }
+  -------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+INFRASTRUCTURE: Aquí viven todas las implementaciones concretas. Conoce el mundo exterior: bases de datos, HTTP, servicios externos.
+Es la única capa que puede importar TypeORM, Express, NestJS, Axios, etc.
+
+  infrastructure/database/psql/typeorm/entities/: La entidad de TypeORM. Es la representación de la tabla en la base de datos. Es dis-
+  tinta a la entidad de dominio. Ejemplo:
+  -------------------------------------------------------------------------------------
+  import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+
+  @Entity('state_employees')
+  export class StateEmployeeTypeormEntity {
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
+
+    @Column({ unique: true })
+    name: string;
+
+    @Column({ default: true })
+    isActive: boolean;
+
+    @CreateDateColumn()
+    createdAt: Date;
+  }
+  -------------------------------------------------------------------------------------
+  infrastructure/database/psql/queries/:Queries SQL complejas o personalizadas que no se expresan bien con el QueryBuilder de TypeORM.
+  -------------------------------------------------------------------------------------
+  export const STATE_EMPLOYEE_QUERIES = {
+    findActiveWithEmployeeCount: `
+      SELECT se.*, COUNT(e.id) as employee_count
+      FROM state_employees se
+      LEFT JOIN employees e ON e.state_id = se.id
+      WHERE se.is_active = true
+      GROUP BY se.id
+      ORDER BY employee_count DESC
+    `,
+  };
+  -------------------------------------------------------------------------------------
+  infrastructure/database/repositories/:La implementación real del repositorio. Aquí sí se usa TypeORM, aquí sí se habla con la base 
+  de datos. Implementa la interfaz definida en el dominio.Ejemplo:
+  -------------------------------------------------------------------------------------
+  import { InjectRepository } from '@nestjs/typeorm';
+  import { Repository } from 'typeorm';
+  import { StateEmployeeRepository } from '../../../domain/repositories/StateEmployeeRepository';
+  import { StateEmployee } from '../../../domain/entities/StateEmployee';
+  import { StateEmployeeTypeormEntity } from '../psql/typeorm/entities/StateEmployeeTypeormEntity';
+
+  export class StateEmployeeRepositoryImpl implements StateEmployeeRepository {
+    constructor(
+      @InjectRepository(StateEmployeeTypeormEntity)
+      private readonly ormRepo: Repository<StateEmployeeTypeormEntity>,
+    ) {}
+
+    async findById(id: string): Promise<StateEmployee | null> {
+      const row = await this.ormRepo.findOne({ where: { id } });
+      if (!row) return null;
+      return new StateEmployee(row.id, row.name, row.isActive, row.createdAt);
+    }
+
+    async save(entity: StateEmployee): Promise<StateEmployee> {
+      const row = this.ormRepo.create({
+        id: entity.id,
+        name: entity.name,
+        isActive: entity.isActive,
+      });
+      const saved = await this.ormRepo.save(row);
+      return new StateEmployee(saved.id, saved.name, saved.isActive, saved.createdAt);
+    }
+
+    // ... resto de métodos
+  }
+  -------------------------------------------------------------------------------------
+  infrastructure/http/routers/: Define las rutas del módulo y las asocia a los controladores.Ejemplo:
+  -------------------------------------------------------------------------------------
+  import { Router } from 'express';
+  import { StateEmployeeController } from '../controllers/StateEmployeeController';
+
+  const router = Router();
+  const controller = new StateEmployeeController();
+
+  router.get('/',        (req, res) => controller.getAll(req, res));
+  router.get('/:id',     (req, res) => controller.getById(req, res));
+  router.post('/',       (req, res) => controller.create(req, res));
+  router.put('/:id',     (req, res) => controller.update(req, res));
+  router.delete('/:id',  (req, res) => controller.delete(req, res));
+
+  export { router as stateEmployeeRouter };
+  -------------------------------------------------------------------------------------
+
+  infrastructure/http/controllers/: Reciben la request HTTP, delegan al caso de uso y devuelven la respuesta. No tienen lógica de ne-
+  gocio, solo coordinan.
+  -------------------------------------------------------------------------------------
+
+    export class StateEmployeeController {
+      constructor(private readonly createUseCase: CreateStateEmployeeUseCase) {}
+
+      async create(req: Request, res: Response): Promise<void> {
+        try {
+          const dto = StateEmployeeHttpMapper.toApplicationDto(req.body);
+          const result = await this.createUseCase.execute(dto);
+          res.status(201).json(result);
+        } catch (error) {
+          if (error instanceof StateEmployeeAlreadyExistsException) {
+            res.status(409).json({ message: error.message });
+          } else {
+            res.status(500).json({ message: 'Error interno' });
+          }
+        }
+      }
+    }
+  --------------------------------------------------------------------------------------
+  infrastructure/http/dtos/requests/: DTOs HTTP con validaciones de entrada (class-validator, Joi, Zod, etc.). Validan que la request 
+  tenga el formato correcto antes de pasarla al caso de uso.
+  -------------------------------------------------------------------------------------
+    import { IsString, IsNotEmpty, MaxLength, IsOptional } from 'class-validator';
+
+    export class CreateStateEmployeeHttpDto {
+      @IsString()
+      @IsNotEmpty()
+      @MaxLength(100)
+      name: string;
+
+      @IsOptional()
+      @IsString()
+      description?: string;
+    }
+  -------------------------------------------------------------------------------------
+  infrastructure/http/mappers/: Transforman el DTO HTTP al DTO de aplicación. Separan el contrato HTTP del contrato interno del caso 
+  de uso.Ejemplo:
+  -------------------------------------------------------------------------------------
+    import { CreateStateEmployeeHttpDto } from '../dtos/requests/CreateStateEmployeeHttpDto';
+    import { CreateStateEmployeeRequestDto } from '../../../../application/dtos/requests/CreateStateEmployeeRequestDto';
+
+    export class StateEmployeeHttpMapper {
+      static toApplicationDto(httpDto: CreateStateEmployeeHttpDto): CreateStateEmployeeRequestDto {
+        return {
+          name: httpDto.name.trim(),
+          description: httpDto.description?.trim(),
+        };
+      }
+    }
+  -------------------------------------------------------------------------------------
+
+Resumen visual del flujo completo
+POST /state-employees  {name: "Activo"}
+        ↓
+  [Router] → identifica la ruta
+        ↓
+  [Controller] → recibe req
+        ↓
+  [HttpDto] → valida que {name} existe y es string
+        ↓
+  [HttpMapper] → convierte a ApplicationDto
+        ↓
+  [UseCase] → revisa reglas de negocio, lanza excepción si ya existe
+        ↓
+  [Domain Entity] → crea el objeto StateEmployee
+        ↓
+  [Repository Interface] → llama a save()
+        ↓
+  [RepositoryImpl] → TypeORM guarda en PostgreSQL
+        ↓
+  [ApplicationMapper] → convierte entidad a ResponseDto
+        ↓
+  res.status(201).json(responseDto)
+Cada carpeta tiene una sola responsabilidad y una sola razón para cambiar. Eso es Clean Code aplicado a la arquitectura.
