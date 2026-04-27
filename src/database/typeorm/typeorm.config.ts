@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 import 'dotenv/config';
-/* import { CountryEntity } from '../../config/location/country/infrastructure/database/psql/typeorm/entities/country.typeorm.entity'; */
+import { CountryEntity } from '../../config/location/country/infrastructure/database/psql/typeorm/entities/country.typeorm.entity';
+import { StateEntity } from '../../config/location/state/infrastructure/database/psql/typeorm/entities/state.typeorm.entity';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -11,9 +12,10 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME,
   ssl: { rejectUnauthorized: false },
   entities: [
-    /* CountryEntity, */
+    CountryEntity,
+    StateEntity,
   ],
   migrations: ['src/database/typeorm/migrations/*.ts'],
-  synchronize: false,
+  synchronize: true,
   logging: ['error']
 });
