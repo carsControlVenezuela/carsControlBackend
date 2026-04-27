@@ -1,11 +1,10 @@
 import { ICountryRepository } from "../../domain/repositories/ICountry.repository";
 import { ICreateCountryPort } from "../ports/iCreateCountry.port";
 import { CountryMapper } from '../mappers/country.mapper';
-import { CountryResponseDto } from "../dtos/responses/country.response.dto";
 import { CountryRequestDto } from "../dtos/request/country.request.dto";
-import { CountryAlreadyExistsException } from "../../domain/exceptions/countryAlreadyExists.exception";
 import { AppLogger } from "../../../../../core/infrastructure/logger/winston.logger";
 import { ILogger } from "../../../../../core/domain/logger/logger.interface";
+import { existCountryByName } from "../helpers/existCountryByName.helper";
 
 export class CreateCountryUseCase implements ICreateCountryPort {
 
@@ -13,27 +12,16 @@ export class CreateCountryUseCase implements ICreateCountryPort {
 
     constructor( private readonly countryRepository: ICountryRepository) {}
 
-    async execute(request: CountryRequestDto): Promise<CountryResponseDto> {
+    async execute(request: CountryRequestDto): Promise<void> {
 
         this.logger.info('Iniciando creación de país', {
             context: 'CreateCountryUseCase',
             name:    request.name
         });
 
-        const exists = await this.countryRepository.findByName(request.name);
+        await existCountryByName(this.countryRepository, request.name);
 
-        if (exists) {
-            throw new CountryAlreadyExistsException(request.name);
-        }
+        await this.countryRepository.save(CountryMapper.toDomain(request));
 
-        const saved = await this.countryRepository.save(CountryMapper.toDomain(request));
-
-        this.logger.info('País creado exitosamente', {
-            context: 'CreateCountryUseCase',
-            id: saved.getId,
-            name: saved.getName
-        });
-
-        return CountryMapper.toResponse(saved);
     }
 }

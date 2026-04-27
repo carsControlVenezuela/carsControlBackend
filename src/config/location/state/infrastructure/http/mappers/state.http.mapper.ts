@@ -4,16 +4,16 @@ import { StateEntity } from '../../database/psql/typeorm/entities/state.typeorm.
 
 export class StateTypeormMapper {
 
-  static toDomain(entity: StateEntity): State {
-    return new State(
-        entity.name,
-        entity.country.id,
-        entity.id,
-        entity.createdAt,
-        entity.updatedAt,
-        entity.active
-    );
-  }
+    static toDomain(entity: StateEntity): State {
+        return new State(
+            entity.name,
+            entity.country.id,
+            entity.id,
+            entity.createdAt,
+            entity.updatedAt,
+            entity.active
+        );
+    }
 
     static toPersistence(state: State): DeepPartial<StateEntity> {
         return {

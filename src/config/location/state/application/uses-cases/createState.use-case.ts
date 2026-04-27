@@ -22,9 +22,9 @@ export class CreateStateUseCase implements ICreateStatePort {
             throw new StateAlreadyExistsException(request.name);
         }
 
-        const saved = await this.stateRepository.save(StateMapper.toDomain(request));
+        await this.stateRepository.save(StateMapper.toDomain(request));
 
-        this.logger.info('Estado creado exitosamente', {context: 'CreateStateUseCase', id: saved.getId});
+        this.logger.info('Estado creado exitosamente', {context: 'CreateStateUseCase'});
     }
 
 }

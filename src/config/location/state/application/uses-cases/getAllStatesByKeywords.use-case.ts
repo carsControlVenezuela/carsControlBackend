@@ -4,8 +4,9 @@ import { StateNotFoundByKeywordException } from "../../domain/exceptions/stateNo
 import { IStateRepository } from "../../domain/repositories/iState.repository";
 import { StateResponseDto } from "../dtos/responses/state.response.dto";
 import { StateMapper } from "../mappers/state.mapper";
+import { IGetAllStatesByKeywordsPort } from "../ports/iGetAllStatesByKeywords.port";
 
-export class GetAllStatesByKeywordsUseCase {
+export class GetAllStatesByKeywordsUseCase implements IGetAllStatesByKeywordsPort{
 
     private readonly logger: ILogger = AppLogger;
 

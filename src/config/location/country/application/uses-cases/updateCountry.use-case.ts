@@ -3,6 +3,7 @@ import { AppLogger } from "../../../../../core/infrastructure/logger/winston.log
 import { ICountryRepository } from "../../domain/repositories/ICountry.repository";
 import { CountryRequestDto } from "../dtos/request/country.request.dto";
 import { CountryResponseDto } from "../dtos/responses/country.response.dto";
+import { existCountryByName } from "../helpers/existCountryByName.helper";
 import { findCountryOrFail } from "../helpers/findCountryOrFail.helper";
 import { CountryMapper } from "../mappers/country.mapper";
 import { IUpdateCountryPort } from "../ports/iUpdateCountry.port";
@@ -18,6 +19,8 @@ export class UpdateCountryUseCase implements IUpdateCountryPort {
         this.logger.info(`Actualizando país con ID: ${id}`, {context: 'UpdateCountryUseCase'});
 
         const existingCountry  = await findCountryOrFail(this.countryRepository, id);
+
+        await existCountryByName(this.countryRepository, request.name);
 
         const update = CountryMapper.merge(existingCountry, request);
 
