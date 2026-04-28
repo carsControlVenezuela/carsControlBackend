@@ -24,6 +24,8 @@ import { UpdateActiveUseCase } from "../../../../../../core/application/use-case
 import { UpdateActiveController } from "../../../../../../core/infrastructure/controllers/updateActive.controller";
 import { UpdateDisableUseCase } from "../../../../../../core/application/use-cases/updateDisable.use-case";
 import { UpdateDisableController } from "../../../../../../core/infrastructure/controllers/updateDisable.controller";
+import { GetStatesByCountryUseCase } from "../../../application/uses-cases/getStatesByCountry.use-case";
+import { GetStatesByCountryController } from "../controllers/getStatesByCountry.controller";
 
 const stateRouter = Router();
 
@@ -38,6 +40,7 @@ const getAllUseCase = new FindAllUseCase(repository, StateMapper.toResponse);   
 const getAllActive = new FindAllActiveUseCase(repository, StateMapper.toResponse);                      //Generico
 const getByNameUseCase = new FindByNameUseCase(repository, "Estado", StateMapper.toResponse);           //Generico                            
 const getAllByKeywordsUseCase = new GetAllStatesByKeywordsUseCase(repository);                          //No Generico
+const getStatesByCountryUseCase = new GetStatesByCountryUseCase(repository);                            //No Generico
 const updateUseCase = new UpdateStateUseCase(repository);                                               
 const updateActiveUseCase = new UpdateActiveUseCase(repository, "Estado");                              //Generico
 const updateDisableUseCase = new UpdateDisableUseCase(repository, "Estado");                            //Generico
@@ -52,15 +55,16 @@ const getAllStatesByKeywordsController = new GetAllStatesByKeywordsController(ge
 const updateStateController = new UpdateStateController(updateUseCase);
 const updateActiveController = new UpdateActiveController(updateActiveUseCase);                                 //Generico
 const updateDisableController = new UpdateDisableController(updateDisableUseCase);                              //Generico
-
+const getStatesByCountryController = new GetStatesByCountryController(getStatesByCountryUseCase);                //No Generico
 
 //ROUTES
 stateRouter.post('/', validateDto(CreateStateRequestDTO), createStateController.create);            //No Generico
 stateRouter.get('/', getAllStatesController.getAll);                                                //Generico
 stateRouter.get('/active', getAllStatesActiveController.getAllActive);                              //Generico
 
-stateRouter.get('/name/:name', getStateByNameController.getByName);                            //Generico
+stateRouter.get('/name/:name', getStateByNameController.getByName);                                 //Generico
 stateRouter.get('/search/:keyword', getAllStatesByKeywordsController.search);                       //No Generico
+stateRouter.get('/country/:country', getStatesByCountryController.getStatesByCountry);              //No Generico
 
 stateRouter.get('/:id', getStateByIdController.getById);                                            //Generico
 stateRouter.put('/:id', validateDto(UpdateStateRequestDTO), updateStateController.updateState);

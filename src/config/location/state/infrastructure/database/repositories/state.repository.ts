@@ -39,5 +39,18 @@ export class StateRepository extends BaseTypeormRepository<State, StateEntity> i
 
         return entities.map(StateTypeormMapper.toDomain);
     }
-    
+
+    async findByCountry(countryId: string): Promise<State[]> {
+
+        console.log('Buscando estados por país:', countryId); // Log para verificar el valor de countryId
+
+        const entities = await this.repo
+            .createQueryBuilder('state')
+            .innerJoinAndSelect('state.country', 'country')
+            .where('country.id = :countryId', { countryId })
+            .andWhere('state.active = :active', { active: true })
+            .getMany(); 
+
+        return entities.map(StateTypeormMapper.toDomain);
+    }
 }
