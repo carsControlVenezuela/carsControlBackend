@@ -5,7 +5,7 @@ import { CreateStateUseCase } from "../../../application/uses-cases/createState.
 import { UpdateStateUseCase } from "../../../application/uses-cases/updateState.use-case";
 import { CreateStateController } from "../controllers/createState.controller";
 import { UpdateStateController } from "../controllers/updateState.controller";
-import { validateDto } from "../../../../../../middlewares/validateDto.middleware";
+import { validateDto } from "../../../../../../core/infrastructure/middlewares/validateDto.middleware";
 import { CreateStateRequestDTO } from "../dtos/requests/createState.request.dto";
 import { UpdateStateRequestDTO } from "../dtos/requests/updateState.request.dto";
 import { FindByIdUseCase } from "../../../../../../core/application/use-cases/findById.use-case";

@@ -1,6 +1,6 @@
 import express, { Application } from 'express';
 import countryRouter from "./config/location/country/infrastructure/http/routers/country.routes";
-import { errorHandler } from './middlewares/errorHandler.middleware';
+import { errorHandler } from './core/infrastructure/middlewares/errorHandler.middleware';
 import { httpLogger } from './core/infrastructure/logger/morgan.middleware';
 import stateRouter from './config/location/state/infrastructure/http/routers/state.route';
 

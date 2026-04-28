@@ -3,7 +3,7 @@ import { CountryRepository } from "../../database/repositories/country.repositor
 import { CreateCountryUseCase } from "../../../application/uses-cases/createCountry.use-case-";
 import { AppDataSource } from "../../../../../../database/typeorm/typeorm.config";
 import { CreateCountryController } from "../controllers/createCountry.controller";
-import { validateDto } from "../../../../../../middlewares/validateDto.middleware";
+import { validateDto } from "../../../../../../core/infrastructure/middlewares/validateDto.middleware";
 import { CountryRequestDTO } from "../dtos/requests/country.request.dto";
 import { UpdateCountryUseCase } from "../../../application/uses-cases/updateCountry.use-case";
 import { UpdateCountryController } from "../controllers/updateCountry.controller";

@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Request, Response, NextFunction } from 'express';
-import { AppResponse } from '../core/infrastructure/http/appResponse.http';
-import { HttpStatus } from '../core/domain/enums/httpStatus.enun';
-import { AppException } from '../core/domain/exceptions/app.exception';
-import { AppLogger } from '../core/infrastructure/logger/winston.logger';
+import { AppResponse } from '../http/appResponse.http';
+import { HttpStatus } from '../../domain/enums/httpStatus.enun';
+import { AppException } from '../../domain/exceptions/app.exception';
+import { AppLogger } from '../logger/winston.logger';
 
 export const errorHandler = (
   err: Error,
