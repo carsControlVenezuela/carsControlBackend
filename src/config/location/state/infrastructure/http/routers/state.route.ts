@@ -26,6 +26,9 @@ import { UpdateDisableUseCase } from "../../../../../../core/application/use-cas
 import { UpdateDisableController } from "../../../../../../core/infrastructure/controllers/updateDisable.controller";
 import { GetStatesByCountryUseCase } from "../../../application/uses-cases/getStatesByCountry.use-case";
 import { GetStatesByCountryController } from "../controllers/getStatesByCountry.controller";
+import { FindAllActivePaginatedUseCase } from "../../../../../../core/application/use-cases/findAllActivePaginated.use-case";
+import { FindAllPaginatedUseCase } from "../../../../../../core/application/use-cases/findAllPaginated.use-case";
+import { FindAllPaginatedController } from "../../../../../../core/infrastructure/controllers/findAllPaginated.controller";
 
 const stateRouter = Router();
 
@@ -45,6 +48,9 @@ const updateUseCase = new UpdateStateUseCase(repository);
 const updateActiveUseCase = new UpdateActiveUseCase(repository, "Estado");                              //Generico
 const updateDisableUseCase = new UpdateDisableUseCase(repository, "Estado");                            //Generico
 
+const getAllPaginatedUseCase = new FindAllPaginatedUseCase(repository, StateMapper.toResponse);
+const getAllActivePaginatedUseCase = new FindAllActivePaginatedUseCase(repository, StateMapper.toResponse);
+
 //CONTROLLERS
 const createStateController = new CreateStateController(createUseCase);                                         //No Generico
 const getStateByIdController = new FindByIdController(getByIdUseCase);                                          //Generico
@@ -57,10 +63,15 @@ const updateActiveController = new UpdateActiveController(updateActiveUseCase); 
 const updateDisableController = new UpdateDisableController(updateDisableUseCase);                              //Generico
 const getStatesByCountryController = new GetStatesByCountryController(getStatesByCountryUseCase);                //No Generico
 
+const getAllPaginatedController = new FindAllPaginatedController(getAllPaginatedUseCase, 'Estados obtenidos');
+const getAllActivePaginatedController = new FindAllPaginatedController(getAllActivePaginatedUseCase, 'Estados activos obtenidos');
+
 //ROUTES
 stateRouter.post('/', validateDto(CreateStateRequestDTO), createStateController.create);            //No Generico
 stateRouter.get('/', getAllStatesController.getAll);                                                //Generico
 stateRouter.get('/active', getAllStatesActiveController.getAllActive);                              //Generico
+stateRouter.get('/paginated', getAllPaginatedController.getAllPaginated);
+stateRouter.get('/active/paginated', getAllActivePaginatedController.getAllPaginated);
 
 stateRouter.get('/name/:name', getStateByNameController.getByName);                                 //Generico
 stateRouter.get('/search/:keyword', getAllStatesByKeywordsController.search);                       //No Generico
