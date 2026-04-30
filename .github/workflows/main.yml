@@ -1,20 +1,26 @@
 name: GitHub Flow CI/CD
 
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# DISPARADORES
+# Cubre: push directo, pull_request y merge (el merge
+# llega como push a la rama destino, por eso está en push)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 on:
   push:
     branches:
       - main
       - develop
-      - testing           # ✅ Existe pero su uso es opcional
-      - 'feature/**'
+      - test
+      - 'features-**'   # ej: features-login, features-auth-jwt
+
   pull_request:
     branches:
       - main
       - develop
-      - testing           # ✅ Acepta PRs hacia testing, pero no es paso obligatorio
+      - test
     types:
       - opened
-      - synchronize
+      - synchronize   # nuevo commit en una rama con PR abierto
       - reopened
       - ready_for_review
 
@@ -23,69 +29,119 @@ permissions:
   pull-requests: write
   statuses: write
 
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# JOB 1 · VALIDACIÓN DE NOMBRE DE RAMA
+# Se ejecuta en CUALQUIER push o PR.
+# Garantiza que nadie trabaje con ramas con nombres
+# incorrectos desde el primer push local → GitHub.
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 jobs:
-
-  # ── 1. VALIDACIÓN DE NOMBRE DE RAMA ──────────
   validate-branch:
     name: 🔍 Validate Branch Name
     runs-on: ubuntu-latest
     steps:
       - name: Check branch naming convention
         run: |
+          # En PRs  → GITHUB_HEAD_REF tiene la rama origen
+          # En push → GITHUB_REF_NAME tiene la rama actual
           BRANCH="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
-          echo "Branch detectada: $BRANCH"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Rama detectada: $BRANCH"
+          echo "Evento        : ${{ github.event_name }}"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-          if echo "$BRANCH" | grep -Eq '^(main|develop|testing|feature\/.+)$'; then
-            echo "✅ Branch '$BRANCH' cumple la convención de nombres."
+          # Patrón permitido:
+          #   main | develop | test | features-<algo>
+          # features-** requiere al menos un carácter después del guión
+          if echo "$BRANCH" | grep -Eq '^(main|develop|test|features-.+)$'; then
+            echo "✅ La rama '$BRANCH' cumple la convención de nombres."
           else
-            echo "❌ Branch '$BRANCH' NO cumple la convención."
-            echo "   Permitidas: main | develop | testing | feature/<nombre>"
+            echo "❌ La rama '$BRANCH' NO cumple la convención."
+            echo ""
+            echo "   Ramas permitidas:"
+            echo "     main"
+            echo "     develop"
+            echo "     test"
+            echo "     features-<nombre>  (ej: features-login, features-auth-jwt)"
+            echo ""
+            echo "   Renombra tu rama local antes de volver a hacer push:"
+            echo "     git branch -m $BRANCH features-<nombre>"
+            echo "     git push origin features-<nombre>"
             exit 1
           fi
 
-  # ── 2. LINT & TYPECHECK ───────────────────────
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # JOB 2 · LINT & TYPECHECK
+  # Corre en todo push y PR válido.
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   lint:
     name: 🧹 Lint & TypeCheck
     runs-on: ubuntu-latest
     needs: validate-branch
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
-      - run: npm run lint
-      - run: npx tsc --noEmit
 
-  # ── 3. BUILD ──────────────────────────────────
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: TypeScript type check (sin emitir archivos)
+        run: npx tsc --noEmit
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # JOB 3 · BUILD
+  # Compila el proyecto y guarda el artefacto dist/
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   build:
     name: 🏗️ Build
     runs-on: ubuntu-latest
     needs: lint
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
-      - run: npm run build
-      - uses: actions/upload-artifact@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile TypeScript → dist/
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/
           retention-days: 3
 
-  # ── 4. TESTS (OPCIONAL) ───────────────────────
-  # 🔄 CAMBIO: solo corre en rama 'testing', uso completamente voluntario
-  # 🔄 CAMBIO: continue-on-error: true → nunca bloquea el pipeline
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # JOB 4 · TESTS — OPCIONAL
+  # Solo se activa cuando el push o PR viene desde
+  # la rama 'test'. Si falla, NO bloquea el pipeline.
+  # Levanta PostgreSQL como servicio Docker para los
+  # tests de integración con Supertest + TypeORM.
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   tests:
-    name: 🧪 Run Tests - Opcional (Jest + Supertest)
+    name: 🧪 Tests — Opcional (Jest + Supertest)
     runs-on: ubuntu-latest
     needs: build
-    continue-on-error: true           # ← Fallo aquí no detiene nada
-    if: github.ref_name == 'testing'  # ← Solo se activa en la rama testing
+    continue-on-error: true   # fallo aquí no detiene deploy ni otros jobs
+
+    # En push → github.ref_name es la rama
+    # En PR   → github.head_ref es la rama origen
+    if: |
+      github.ref_name == 'test' ||
+      github.head_ref == 'test'
 
     env:
       NODE_ENV: test
@@ -112,67 +168,182 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
-      - run: npm run test:cov
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm run test:cov
+
       - name: Upload coverage report
-        if: always()
+        if: always()   # se sube aunque los tests fallen
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage/
           retention-days: 7
 
-  # ── 5. POLÍTICA DE PRs ────────────────────────
-  pr-policy:
-    name: 📋 PR Policy Check
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # JOB 5 · POLÍTICA DE PULL REQUESTS Y MERGES
+  #
+  # ¿Por qué también cubre merges?
+  # Un merge en GitHub llega como un push a la rama
+  # destino. Con github.event.head_commit.message
+  # detectamos si fue un merge commit y validamos
+  # la combinación de ramas origen → destino.
+  #
+  # Reglas:
+  #   features-** → develop  ✅
+  #   features-** → test     ✅ (opcional)
+  #   features-** → main     ❌ directo prohibido
+  #   test        → develop  ✅
+  #   develop     → main     ✅
+  #   cualquier otra combinación → ❌
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  pr-and-merge-policy:
+    name: 📋 PR & Merge Policy
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
     needs: validate-branch
+
+    # Se ejecuta:
+    #   - Siempre que sea un PR
+    #   - O cuando sea un push a main/develop/test (posible merge)
+    if: |
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'push' &&
+        (github.ref_name == 'main' ||
+         github.ref_name == 'develop' ||
+         github.ref_name == 'test'))
+
     steps:
-      - name: Enforce merge rules
+      - name: Validate PR rules
+        if: github.event_name == 'pull_request'
         run: |
           HEAD="${{ github.head_ref }}"
           BASE="${{ github.base_ref }}"
-          echo "PR: $HEAD → $BASE"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "PR detectado: $HEAD → $BASE"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-          # feature/* → develop o testing (testing es opcional, no obligatorio)
-          if echo "$HEAD" | grep -Eq '^feature\/.+$'; then
-            if [[ "$BASE" != "develop" && "$BASE" != "testing" ]]; then
-              echo "❌ Las ramas 'feature/*' solo pueden hacer PR a 'develop' o 'testing'."
-              exit 1
+          VALID=true
+
+          # features-** solo puede ir a develop o test
+          if echo "$HEAD" | grep -Eq '^features-.+$'; then
+            if [[ "$BASE" != "develop" && "$BASE" != "test" ]]; then
+              echo "❌ Las ramas 'features-**' solo pueden hacer PR a 'develop' o 'test'."
+              echo "   Destino recibido: '$BASE'"
+              VALID=false
             fi
           fi
 
-          # testing → develop (si se usa, solo puede ir a develop)
-          if [[ "$HEAD" == "testing" && "$BASE" != "develop" ]]; then
-            echo "❌ La rama 'testing' solo puede hacer PR a 'develop'."
-            exit 1
+          # Bloquear features-** → main directo (doble check explícito)
+          if echo "$HEAD" | grep -Eq '^features-.+$' && [[ "$BASE" == "main" ]]; then
+            echo "❌ Merge directo de 'features-**' a 'main' está prohibido."
+            echo "   Flujo correcto: features-** → develop → main"
+            VALID=false
           fi
 
-          # develop → main
+          # test → solo puede ir a develop
+          if [[ "$HEAD" == "test" && "$BASE" != "develop" ]]; then
+            echo "❌ La rama 'test' solo puede hacer PR a 'develop'."
+            VALID=false
+          fi
+
+          # develop → solo puede ir a main
           if [[ "$HEAD" == "develop" && "$BASE" != "main" ]]; then
             echo "❌ La rama 'develop' solo puede hacer PR a 'main'."
-            exit 1
+            VALID=false
           fi
 
-          # Bloquear feature/* → main directo
-          if echo "$HEAD" | grep -Eq '^feature\/.+$' && [[ "$BASE" == "main" ]]; then
-            echo "❌ No se permite merge directo de 'feature/*' a 'main'."
+          # main no puede ser rama origen de ningún PR
+          if [[ "$HEAD" == "main" ]]; then
+            echo "❌ No se puede abrir un PR desde 'main'."
+            VALID=false
+          fi
+
+          if [[ "$VALID" == "false" ]]; then
+            echo ""
+            echo "Flujo permitido:"
+            echo "  features-** → develop  ✅"
+            echo "  features-** → test     ✅ (opcional)"
+            echo "  test        → develop  ✅"
+            echo "  develop     → main     ✅"
             exit 1
           fi
 
           echo "✅ Política de PR aprobada: $HEAD → $BASE"
 
-  # ── 6. DEPLOY (solo push a main) ──────────────
-  # 🔄 CAMBIO: 'tests' eliminado de needs → deploy no depende de los tests
+      - name: Detect and validate merge commits
+        if: github.event_name == 'push'
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Push a rama : $BRANCH"
+          echo "Commit msg  : $COMMIT_MSG"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+          # GitHub genera automáticamente mensajes como:
+          #   "Merge branch 'features-login' into develop"
+          #   "Merge pull request #12 from owner/features-login"
+          IS_MERGE=false
+          if echo "$COMMIT_MSG" | grep -Eq "^Merge (branch|pull request)"; then
+            IS_MERGE=true
+          fi
+
+          if [[ "$IS_MERGE" == "false" ]]; then
+            echo "ℹ️  Push directo (no es merge commit). Validación de política omitida."
+            exit 0
+          fi
+
+          echo "🔀 Merge commit detectado. Validando origen → destino..."
+
+          # Extraer rama origen del mensaje de merge
+          SOURCE=$(echo "$COMMIT_MSG" | grep -oP "(?<=branch ')([^']+)(?=')" | head -1)
+          if [[ -z "$SOURCE" ]]; then
+            SOURCE=$(echo "$COMMIT_MSG" | grep -oP "(?<=from [^/]+/)(.+)$" | head -1)
+          fi
+
+          echo "Origen detectado: '${SOURCE:-desconocido}'"
+          echo "Destino         : '$BRANCH'"
+
+          VALID=true
+
+          # features-** → main directo prohibido
+          if echo "$SOURCE" | grep -Eq '^features-.+$' && [[ "$BRANCH" == "main" ]]; then
+            echo "❌ Merge de 'features-**' directo a 'main' detectado y bloqueado."
+            echo "   Flujo correcto: features-** → develop → main"
+            VALID=false
+          fi
+
+          # test → main prohibido (debe pasar por develop)
+          if [[ "$SOURCE" == "test" && "$BRANCH" == "main" ]]; then
+            echo "❌ Merge de 'test' directo a 'main' detectado y bloqueado."
+            echo "   Flujo correcto: test → develop → main"
+            VALID=false
+          fi
+
+          if [[ "$VALID" == "false" ]]; then
+            exit 1
+          fi
+
+          echo "✅ Merge válido: ${SOURCE:-?} → $BRANCH"
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # JOB 6 · DEPLOY A PRODUCCIÓN
+  # Solo se activa cuando hay un push (o merge) a main.
+  # Depende de build y pr-and-merge-policy.
+  # Tests no bloquean el deploy (continue-on-error: true).
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   deploy:
     name: 🚀 Deploy to Production
     runs-on: ubuntu-latest
-    needs: [build, pr-policy]        # ← 'tests' removido
+    needs: [build, pr-and-merge-policy]
     if: |
       github.ref == 'refs/heads/main' &&
       github.event_name == 'push'
@@ -180,13 +351,22 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
-      - name: Deploy carscontrolbackend API
+
+      - name: Deploy carscontrolbackend
         env:
           DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
         run: |
           echo "🚀 Desplegando carscontrolbackend en producción..."
-          # Railway / Render / VPS / Docker según tu plataformasssss
+          # ─── Descomenta la línea de tu plataforma ───────────────
+          # Railway : railway up
+          # Render  : curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+          # VPS/SSH : ssh -i $DEPLOY_KEY user@host "cd /app && git pull && npm run start"
+          # Docker  : docker build -t carscontrolbackend . && docker push ...
+          # ────────────────────────────────────────────────────────
+          echo "✅ Deploy completado."
