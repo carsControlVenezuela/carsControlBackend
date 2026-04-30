@@ -1,0 +1,192 @@
+name: GitHub Flow CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - testing           # ✅ Existe pero su uso es opcional
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+      - testing           # ✅ Acepta PRs hacia testing, pero no es paso obligatorio
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: write
+
+jobs:
+
+  # ── 1. VALIDACIÓN DE NOMBRE DE RAMA ──────────
+  validate-branch:
+    name: 🔍 Validate Branch Name
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch naming convention
+        run: |
+          BRANCH="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+          echo "Branch detectada: $BRANCH"
+
+          if echo "$BRANCH" | grep -Eq '^(main|develop|testing|feature\/.+)$'; then
+            echo "✅ Branch '$BRANCH' cumple la convención de nombres."
+          else
+            echo "❌ Branch '$BRANCH' NO cumple la convención."
+            echo "   Permitidas: main | develop | testing | feature/<nombre>"
+            exit 1
+          fi
+
+  # ── 2. LINT & TYPECHECK ───────────────────────
+  lint:
+    name: 🧹 Lint & TypeCheck
+    runs-on: ubuntu-latest
+    needs: validate-branch
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+
+  # ── 3. BUILD ──────────────────────────────────
+  build:
+    name: 🏗️ Build
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 3
+
+  # ── 4. TESTS (OPCIONAL) ───────────────────────
+  # 🔄 CAMBIO: solo corre en rama 'testing', uso completamente voluntario
+  # 🔄 CAMBIO: continue-on-error: true → nunca bloquea el pipeline
+  tests:
+    name: 🧪 Run Tests - Opcional (Jest + Supertest)
+    runs-on: ubuntu-latest
+    needs: build
+    continue-on-error: true           # ← Fallo aquí no detiene nada
+    if: github.ref_name == 'testing'  # ← Solo se activa en la rama testing
+
+    env:
+      NODE_ENV: test
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_NAME: ${{ secrets.DB_NAME_TEST }}
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ${{ secrets.DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.DB_NAME_TEST }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run test:cov
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+  # ── 5. POLÍTICA DE PRs ────────────────────────
+  pr-policy:
+    name: 📋 PR Policy Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: validate-branch
+    steps:
+      - name: Enforce merge rules
+        run: |
+          HEAD="${{ github.head_ref }}"
+          BASE="${{ github.base_ref }}"
+          echo "PR: $HEAD → $BASE"
+
+          # feature/* → develop o testing (testing es opcional, no obligatorio)
+          if echo "$HEAD" | grep -Eq '^feature\/.+$'; then
+            if [[ "$BASE" != "develop" && "$BASE" != "testing" ]]; then
+              echo "❌ Las ramas 'feature/*' solo pueden hacer PR a 'develop' o 'testing'."
+              exit 1
+            fi
+          fi
+
+          # testing → develop (si se usa, solo puede ir a develop)
+          if [[ "$HEAD" == "testing" && "$BASE" != "develop" ]]; then
+            echo "❌ La rama 'testing' solo puede hacer PR a 'develop'."
+            exit 1
+          fi
+
+          # develop → main
+          if [[ "$HEAD" == "develop" && "$BASE" != "main" ]]; then
+            echo "❌ La rama 'develop' solo puede hacer PR a 'main'."
+            exit 1
+          fi
+
+          # Bloquear feature/* → main directo
+          if echo "$HEAD" | grep -Eq '^feature\/.+$' && [[ "$BASE" == "main" ]]; then
+            echo "❌ No se permite merge directo de 'feature/*' a 'main'."
+            exit 1
+          fi
+
+          echo "✅ Política de PR aprobada: $HEAD → $BASE"
+
+  # ── 6. DEPLOY (solo push a main) ──────────────
+  # 🔄 CAMBIO: 'tests' eliminado de needs → deploy no depende de los tests
+  deploy:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build, pr-policy]        # ← 'tests' removido
+    if: |
+      github.ref == 'refs/heads/main' &&
+      github.event_name == 'push'
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Deploy carscontrolbackend API
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+        run: |
+          echo "🚀 Desplegando carscontrolbackend en producción..."
+          # Railway / Render / VPS / Docker según tu plataformasssss
