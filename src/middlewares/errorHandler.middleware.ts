@@ -9,13 +9,13 @@ export const errorHandler = (
   err: Error,
   _req: Request,
   res: Response,
-  _next: NextFunction
+  _next: NextFunction,
 ): void => {
   if (err instanceof AppException) {
     AppLogger.warn(err.message, {
-        context:    'ExceptionHandler',
-        statusCode: err.statusCode,
-        name:       err.name
+      context: 'ExceptionHandler',
+      statusCode: err.statusCode,
+      name: err.name,
     });
     AppResponse.error(res, err.statusCode, err.message);
     return;
@@ -23,7 +23,7 @@ export const errorHandler = (
 
   AppLogger.error(err.message, {
     context: 'ExceptionHandler',
-    stack:   err.stack
+    stack: err.stack,
   });
 
   AppResponse.error(res, HttpStatus.INTERNAL_SERVER_ERROR, 'Error interno del servidor');
