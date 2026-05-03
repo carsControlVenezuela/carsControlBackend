@@ -1,4 +1,8 @@
+# name: Aqui se pone el nombre del flujo de trabajo que luego se mostrara en la pestaña de acctions del repositorio
 name: Validar políticas de ramas
+
+# on: Se utiliza para deifinir que eventos pueden hacer que se ejecute el flujo de trabajo, en este caso el flujo de trabajo se ejecuta cuando haces push o un pull_re-
+# quest en cualquier rama.
 
 on:
   push:
@@ -7,6 +11,26 @@ on:
   pull_request:
     branches:
       - '**'
+
+# jobs.<job_id>: job_id sirve para asignar un identificador unico al trabajo, en este caso se le dio validar-ramas.
+# jobs.<job_id>.name: Sirve para establecer un nombre para el trabajo, que se muesta en la UI de gitHub.
+# jobs.<job_id>.runs-on: Sirve para definir el tipo de maquina en la que se ejecutara el trabajo, en este caso se ejecutara en ubuntu.
+# jobs.<job_id>.steps: Sirve para definir una secuencia de tareas.
+# jobs.<job_id>.steps[*].id: Permite definir un identificador unico para el paso.
+# jobs.<job_id>.steps[*].run: Permite ejecutar programas de lineas de comandos mediante el shell del sistema operativo y | se utiliza para escribir en varias lineas
+# shell bash: Permite que en el shell de gitHub se ejecute comandos de Linux
+# env: GITHUB_EVENT_PATH: ${{ github.event_path }}: Establece variables para los pasos a utilizar en el entorno de ejecución. También puedes establecer las 
+# variables para todo el flujo de trabajo o para una tarea.
+
+# Variables de entorno githubActions: Estas son variables administrativas que pueden ser utilizadas durante el flujo de trabajo, incluidas las variables de entorno ,las 
+# de configuración y predeterminadas proporcionadas por GitHub, estas son las que se utilizaron:
+# ----------INICIO----------
+# $GITHUB_EVENT_NAME: El nombre del evento que activó el flujo de trabajo. Por ejemplo, workflow_dispatch.
+# $GITHUB_REF: Referencia de formato completo de la rama o etiqueta que desencadenó la ejecución del flujo de trabajo
+# $GITHUB_SHA: El hash del commit que disparó el workflow
+# ${{ github.event_path }} : Es una variable de GitHub Actions que contiene la ruta al archivo JSON que tiene toda la información del evento que disparó el workflow.De-
+# pendiendo del evento, contiene datos como quién hizo el push, qué rama, qué commits, etc.
+# ----------FIN----------
 
 jobs:
   validar-ramas:
