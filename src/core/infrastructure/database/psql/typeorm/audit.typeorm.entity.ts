@@ -1,7 +1,6 @@
-import { CreateDateColumn, UpdateDateColumn, Column, BaseEntity} from 'typeorm';
+import { CreateDateColumn, UpdateDateColumn, Column, BaseEntity } from 'typeorm';
 
 export abstract class AuditTypeormEntity extends BaseEntity {
-
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
