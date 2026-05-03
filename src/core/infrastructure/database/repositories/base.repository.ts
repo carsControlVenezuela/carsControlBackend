@@ -52,7 +52,7 @@ export abstract class BaseTypeormRepository<TDomain extends AuditEntity, TEntity
 
         const options: FindOptionsWhere<TEntity> = {name: name} as any;
 
-        const entity = await this.repo.findOne({where: options,relations: this.getRelations()});
+        const entity = await this.repo.findOne({where: options, relations: this.getRelations()});
 
         if (!entity) {
             return null;
@@ -74,8 +74,8 @@ export abstract class BaseTypeormRepository<TDomain extends AuditEntity, TEntity
         const [entities, total] = await this.repo.findAndCount({
             relations: this.getRelations(),
             skip,
-            take:      limit,
-            order:     { createdAt: 'DESC' } as any
+            take: limit,
+            order: { createdAt: 'DESC' } as any
         });
 
         return this.buildPaginatedResult(entities.map(e => this.toDomain(e)), total, params);
@@ -87,11 +87,11 @@ export abstract class BaseTypeormRepository<TDomain extends AuditEntity, TEntity
         const skip = (page - 1) * limit;
 
         const [entities, total] = await this.repo.findAndCount({
-            where:     { active: true } as FindOptionsWhere<TEntity>,
+            where: { active: true } as FindOptionsWhere<TEntity>,
             relations: this.getRelations(),
             skip,
-            take:      limit,
-            order:     { createdAt: 'DESC' } as any
+            take: limit,
+            order: { createdAt: 'DESC' } as any
         });
 
         return this.buildPaginatedResult(entities.map(e => this.toDomain(e)), total, params);
@@ -102,11 +102,11 @@ export abstract class BaseTypeormRepository<TDomain extends AuditEntity, TEntity
         return {
             data,
             total,
-            page:       params.page,
-            limit:      params.limit,
+            page: params.page,
+            limit: params.limit,
             totalPages,
-            hasNext:    params.page < totalPages,
-            hasPrev:    params.page > 1
+            hasNext: params.page < totalPages,
+            hasPrev: params.page > 1
         };
     }
 }

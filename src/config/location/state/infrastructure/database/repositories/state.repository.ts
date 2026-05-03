@@ -27,7 +27,7 @@ export class StateRepository extends BaseTypeormRepository<State, StateEntity> i
     async save(state: State): Promise<void> {
         
         await this.repo.save(this.repo.create(StateTypeormMapper.toPersistence(state)));
-  
+
     }
 
     async findAllByKeywords(name: string): Promise<State[]> {
@@ -42,8 +42,6 @@ export class StateRepository extends BaseTypeormRepository<State, StateEntity> i
     }
 
     async findByCountry(countryId: string): Promise<State[]> {
-
-        console.log('Buscando estados por país:', countryId); // Log para verificar el valor de countryId
 
         const entities = await this.repo
             .createQueryBuilder('state')

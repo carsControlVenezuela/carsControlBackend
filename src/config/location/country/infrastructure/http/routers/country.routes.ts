@@ -23,6 +23,7 @@ import { FindAllActiveController } from "../../../../../../core/infrastructure/c
 import { FindByNameController } from "../../../../../../core/infrastructure/controllers/findByName.controller";
 import { UpdateActiveController } from "../../../../../../core/infrastructure/controllers/updateActive.controller";
 import { UpdateDisableController } from "../../../../../../core/infrastructure/controllers/updateDisable.controller";
+import { authorizePermission, authorizeRoles } from "../../../../../../auth/infrastructure/middlewares/authorize.middleware";
 
 
 const countryRouter = Router();
@@ -57,7 +58,7 @@ const updateDisableController = new UpdateDisableController(updateDisableUseCase
 
 
 //ROUTES
-countryRouter.post('/', validateDto(CountryRequestDTO), createCountryController.create);
+countryRouter.post('/', authorizeRoles('ADMIN'), validateDto(CountryRequestDTO), createCountryController.create);
 countryRouter.get('/', getAllCountriesController.getAll);
 countryRouter.get('/active', getAllCountriesActiveController.getAllActive);
 
@@ -67,6 +68,6 @@ countryRouter.get('/search/:keyword', getAllCountriesByKeywordsController.search
 countryRouter.get('/:id', getCountryByIdController.getById);
 countryRouter.put('/:id', validateDto(CountryRequestDTO), updateCountryController.updateCountry);
 countryRouter.patch('/:id/toggle', updateActiveController.updateActive);
-countryRouter.patch('/:id/disable', updateDisableController.updateDisable);
+countryRouter.patch('/:id/disable', authorizePermission('countries', 'delete'), updateDisableController.updateDisable);
 
 export default countryRouter;
