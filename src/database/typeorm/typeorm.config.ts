@@ -10,6 +10,7 @@ import { RefreshTokenEntity } from '../../auth/infrastructure/database/psql/type
 import { PersonEntity } from '../../person/infrastructure/database/psql/typeorm/entities/person.typeorm.entity';
 
 import { MunicipalityEntity } from '../../config/location/municipality/infrastructure/database/psql/typeorm/entities/municipality.typeorm.entity';
+import { ParishEntity } from '../../config/location/parish/infrastructure/database/psql/typeorm/entities/parish.typeorm.entity';
 
 
 export const AppDataSource = new DataSource({
@@ -23,12 +24,13 @@ export const AppDataSource = new DataSource({
   entities: [
     CountryEntity,
     StateEntity,
+    ParishEntity,
+    MunicipalityEntity,
     UserEntity,
     RoleEntity,
     PermissionEntity,
     RefreshTokenEntity,
     PersonEntity,
-    MunicipalityEntity,
   ],
   migrations: ['src/database/typeorm/migrations/*.ts'],
   synchronize: false,
