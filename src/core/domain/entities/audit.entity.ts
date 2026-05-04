@@ -19,43 +19,35 @@ export class AuditEntity {
     this._updatedBy = updatedBy;
   }
 
-  get createdAt(): Date {
-    return this._createdAt;
-  }
-  get updatedAt(): Date {
-    return this._updatedAt;
-  }
-  get active(): boolean {
-    return this._active;
-  }
-  get createdBy(): string | undefined {
-    return this._createdBy;
-  }
-  get updatedBy(): string | undefined {
-    return this._updatedBy;
-  }
+  //Getters
+  get getCreatedAt(): Date { return this._createdAt; }
+  get getUpdatedAt(): Date { return this._updatedAt; }
+  get getActive(): boolean { return this._active; }
+  get getCreatedBy(): string | undefined { return this._createdBy; }
+  get getUpdatedBy(): string | undefined { return this._updatedBy; }
 
-  set active(value: boolean) {
-    this._active = value;
-  }
-  set updatedBy(value: string) {
-    this._updatedBy = value;
-  }
+  //Setters
+  set setActive(value: boolean) { this._active = value; }
+  set setUpdatedBy(value: string) { this._updatedBy = value; }
 
+  //Método para actualizar la fecha de actualización
   touch(): void {
     this._updatedAt = new Date();
   }
 
+  //Método para desactivar la entidad
   deactivate(): void {
     this._active = false;
     this._updatedAt = new Date();
   }
 
+  //Método para activar la entidad
   activate(): void {
     this._active = true;
     this._updatedAt = new Date();
   }
 
+  //Método para alternar el estado activo/inactivo  
   toggle(): void {
     this._active = !this._active;
     this._updatedAt = new Date();
