@@ -1,6 +1,7 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { AuditTypeormEntity } from "../../../../../../../../core/infrastructure/database/psql/typeorm/audit.typeorm.entity";
 import { CountryEntity } from "../../../../../../country/infrastructure/database/psql/typeorm/entities/country.typeorm.entity";
+import { MunicipalityEntity } from "../../../../../../municipality/infrastructure/database/psql/typeorm/entities/municipality.typeorm.entity";
 
 @Entity('state')
 export class StateEntity extends AuditTypeormEntity{
@@ -17,4 +18,7 @@ export class StateEntity extends AuditTypeormEntity{
     )
     @JoinColumn({ name: 'idCountry' })
     country!: CountryEntity;
+
+    @OneToMany(() => MunicipalityEntity, municipality => municipality.state)
+    municipalities!: MunicipalityEntity[];
 }
