@@ -13,7 +13,7 @@ export class CreateParishController {
             AppResponse.created(
                 res,
                 await this.createParishUseCase.execute(req.body),
-                'Parroquia creado exitosamente'
+                'Parroquia creada exitosamente'
             );
         } catch (error) {
             next(error);
