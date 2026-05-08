@@ -11,7 +11,6 @@ export class FindByIdController<T> {
 
     getById = async (req: Request, res: Response, next: NextFunction) : Promise<void> => {
         try {
-            console.log("Entro en el controlador")
             AppResponse.ok(
                 res,
                 await this.findByIdUseCase.execute(req.params.id as string),

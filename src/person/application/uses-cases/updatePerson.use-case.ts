@@ -14,14 +14,10 @@ export class UpdatePersonUseCase implements IUpdatePersonPort {
     constructor( private readonly personRepository: IPersonRepository ) {}
 
     async execute(id: string, request: UpdatePersonRequestDto): Promise<void> {
-        
-        console.log("CHAOOOOO: ", request)
 
         this.logger.info(`Actualizando persona con ID: ${id}`, {context: 'UpdatePersonUseCase'});
 
         const person  = await findPersonOrFail(this.personRepository, id);
-
-        console.log("HOLLAAAA: ", person)
 
         if(request.cedula) {
             await findPersonByCedulaOrFail(this.personRepository, request.cedula)

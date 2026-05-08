@@ -8,7 +8,6 @@ export class UpdateActiveController {
 
     updateActive = async (req: Request, res: Response, next: NextFunction) : Promise<void> => {
         try {
-            console.log("Entro en el controllador")
             AppResponse.ok(
                 res,
                 await this.updateActiveUseCase.execute(req.params.id as string),

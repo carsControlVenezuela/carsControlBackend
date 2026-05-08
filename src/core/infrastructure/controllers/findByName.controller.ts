@@ -8,7 +8,6 @@ export class FindByNameController<T> {
 
     getByName = async (req: Request, res: Response, next: NextFunction) : Promise<void> => {  
         try {
-            console.log("Entro en el controlador")
             AppResponse.ok(
                 res,
                 await this.findByNameUseCase.execute(req.params.name as string),

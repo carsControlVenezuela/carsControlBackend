@@ -6,9 +6,6 @@ import { HttpStatus } from '../../../core/domain/enums/httpStatus.enun';
 export const authorizeRoles = (...roles: string[]) => {
     return (req: Request, res: Response, next: NextFunction): void => {
 
-        console.log('Roles requeridos:', roles);
-        console.log('Roles del usuario:', req.user);
-
         if (!req.user) {
             AppResponse.error(res, HttpStatus.UNAUTHORIZED, 'No autenticado');
             return;
@@ -22,15 +19,13 @@ export const authorizeRoles = (...roles: string[]) => {
         }
 
         next();
+        
     };
 };
 
 //Verifica que el usuario tenga el permiso específico (resource:action)
 export const authorizePermission = (resource: string, action: string) => {
     return (req: Request, res: Response, next: NextFunction): void => {
-
-        console.log('Permiso requerido:', `${resource}:${action}`);
-        console.log('Permisos del usuario:', req.user);
 
         if (!req.user) {
             AppResponse.error(res, HttpStatus.UNAUTHORIZED, 'No autenticado');
@@ -46,5 +41,6 @@ export const authorizePermission = (resource: string, action: string) => {
         }
 
         next();
+
     };
 };
