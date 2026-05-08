@@ -1,4 +1,4 @@
-import { DeepPartial, Repository } from 'typeorm';
+import { Brackets, DeepPartial, Repository } from 'typeorm';
 import { Person } from '../../../domain/entities/person.entity';
 import { IPersonRepository } from '../../../domain/repositories/iPerson.repository';
 import { BaseTypeormRepository } from '../../../../core/infrastructure/database/repositories/base.repository';
@@ -49,12 +49,25 @@ export class PersonRepository extends BaseTypeormRepository<Person, PersonEntity
         return PersonTypeormMapper.toDomain(entity);
     }
 
-    async findAllByKeywords(name: string): Promise<Person[]> {
+    async findAllByKeywords(term: string): Promise<Person[]> {
+        const searchTerm = `%${term.toLowerCase()}%`;
 
         const entities = await this.repo
             .createQueryBuilder('person')
             .innerJoinAndSelect('person.user', 'user')
-            .where('LOWER(person.firstName) LIKE LOWER(:name)', { name: `%${name}%` })
+            .where(
+                new Brackets((qb) => {
+                    qb.where('LOWER(person.firstName) LIKE :term', { term: searchTerm })
+                        .orWhere('LOWER(person.middleName) LIKE :term', { term: searchTerm })
+                        .orWhere('LOWER(person.lastName) LIKE :term', { term: searchTerm })
+                        .orWhere('LOWER(person.secondName) LIKE :term', { term: searchTerm })
+                        .orWhere('person.cedula LIKE :term', { term: searchTerm })
+                        // Incluso se puede buscar por campos de la tabla unida (user)
+                        .orWhere('LOWER(user.email) LIKE :term', { term: searchTerm });
+                }),
+            )
+            // Si se tiene un borrado lógico o se quiere solo los activos, se pone fuera del Bracket:
+            // .andWhere('person.isActive = :active', { active: true }) 
             .getMany();
 
         return entities.map(PersonTypeormMapper.toDomain);

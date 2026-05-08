@@ -6,6 +6,7 @@ import stateRouter from './config/location/state/infrastructure/http/routers/sta
 import authRouter from './auth/infrastructure/http/routers/auth.route';
 import { authenticate } from './auth/infrastructure/middlewares/authenticate.middleware';
 import ParishRouter from './config/location/parish/infrastructure/http/routers/state.route';
+import personRouter from './person/infrastructure/http/routers/person.route';
 
 const app: Application = express();
 
@@ -18,6 +19,7 @@ app.use('/auth', authRouter);
 app.use('/countries', authenticate, countryRouter);
 app.use('/states', authenticate, stateRouter);
 app.use('/parishes', ParishRouter);
+app.use('/persons', personRouter);
 
 app.use(errorHandler);
 

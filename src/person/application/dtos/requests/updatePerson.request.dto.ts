@@ -1,4 +1,4 @@
-export interface UpdatePersonInputDto {
+export interface UpdatePersonRequestDto {
     //idPostalZone?: string;
     cedula?: string;
     firstName?: string;
