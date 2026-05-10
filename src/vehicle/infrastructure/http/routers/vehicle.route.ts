@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { VehicleTypeormRepository } from '../../database/psql/typeorm/repositories/vehicle.typeorm.repository';
-import { ModelTypeormRepository } from '../../../../model/infrastructure/database/psql/typeorm/repositories/model.typeorm.repository';
+import { ModelTypeormRepository } from '../../../../config/vehicle/model/infrastructure/database/psql/typeorm/repositories/model.typeorm.repository';
 import { CreateVehicleUseCase } from '../../../application/uses-cases/createVehicle.use-case';
 import { GetVehicleByIdUseCase } from '../../../application/uses-cases/getVehicleById.use-case';
 import { GetVehiclesByPersonUseCase } from '../../../application/uses-cases/getVehiclesByPerson.use-case';

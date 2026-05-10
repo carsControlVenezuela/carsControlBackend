@@ -6,7 +6,7 @@ import { VehicleRequestDto } from '../dtos/requests/vehicle.request.dto';
 import { VehicleMapper } from '../mappers/vehicle.mapper';
 import { ICreateVehiclePort } from '../ports/iCreateVehicle.port';
 import { ModelNotFoundException } from '../../domain/exceptions/modelNotFound.exception';
-import { IModelRepository } from '../../../model/domain/repositories/iModel.repository';
+import { IModelRepository } from '../../../config/vehicle/model/domain/repositories/iModel.repository';
 
 export class CreateVehicleUseCase implements ICreateVehiclePort {
   private readonly logger: ILogger = AppLogger;

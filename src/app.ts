@@ -7,8 +7,8 @@ import authRouter from './auth/infrastructure/http/routers/auth.route';
 import { authenticate } from './auth/infrastructure/middlewares/authenticate.middleware';
 import ParishRouter from './config/location/parish/infrastructure/http/routers/state.route';
 import personRouter from './person/infrastructure/http/routers/person.route';
-import brandRouter from './brand/infrastructure/http/routers/brand.route';
-import modelRouter from './model/infrastructure/http/routers/model.route';
+import brandRouter from './config/vehicle/brand/infrastructure/http/routers/brand.route';
+import modelRouter from './config/vehicle/model/infrastructure/http/routers/model.route';
 import vehicleRouter from './vehicle/infrastructure/http/routers/vehicle.route';
 
 const app: Application = express();

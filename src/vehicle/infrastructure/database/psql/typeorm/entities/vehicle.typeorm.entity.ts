@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { AuditTypeormEntity } from '../../../../../../core/infrastructure/database/psql/typeorm/audit.typeorm.entity';
-import { ModelEntity } from '../../../../../../model/infrastructure/database/psql/typeorm/entities/model.typeorm.entity';
+import { ModelEntity } from '../../../../../../config/vehicle/model/infrastructure/database/psql/typeorm/entities/model.typeorm.entity';
 
 @Entity('vehicle')
 export class VehicleEntity extends AuditTypeormEntity {
