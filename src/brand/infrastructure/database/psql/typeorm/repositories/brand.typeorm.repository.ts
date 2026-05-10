@@ -40,6 +40,11 @@ export class BrandTypeormRepository implements IBrandRepository {
     await this.repository.softDelete(id);
   }
 
+  async update(brand: Brand): Promise<void> {
+    const entity = this.toPersistence(brand);
+    await this.repository.save(entity as BrandEntity);
+  }
+
   private toPersistence(brand: Brand): DeepPartial<BrandEntity> {
     return {
       id: brand.id,

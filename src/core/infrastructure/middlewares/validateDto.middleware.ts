@@ -24,7 +24,9 @@ export function validateDto(dtoClass: any, element: 'body' | 'params' | 'query' 
       return res.status(HttpStatus.BAD_REQUEST).json({ errors: formattedErrors });
     }
 
-    req.body = dtoInstance;
+    if (element === 'body') {
+      req.body = dtoInstance;
+    }
     next();
   };
 }

@@ -45,6 +45,11 @@ export class ModelTypeormRepository implements IModelRepository {
     await this.repository.softDelete(id);
   }
 
+  async update(model: Model): Promise<void> {
+    const entity = this.toPersistence(model);
+    await this.repository.save(entity as ModelEntity);
+  }
+
   private toPersistence(model: Model): DeepPartial<ModelEntity> {
     return {
       id: model.id,

@@ -6,5 +6,6 @@ export interface IModelRepository {
   findAll(): Promise<Model[]>;
   findByBrand(idBrand: string): Promise<Model[]>;
   findByName(name: string): Promise<Model | null>;
+  update(model: Model): Promise<void>;
   delete(id: string): Promise<void>;
 }
