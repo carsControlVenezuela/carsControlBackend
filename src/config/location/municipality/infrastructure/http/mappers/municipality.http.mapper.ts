@@ -3,25 +3,23 @@ import { MunicipalityEntity } from '../../database/psql/typeorm/entities/municip
 import { Municipality } from '../../../domain/entities/municipality.entity';
 
 export class MunicipalityTypeormMapper {
+  static toDomain(entity: MunicipalityEntity): Municipality {
+    return new Municipality(
+      entity.name,
+      entity.state.id,
+      entity.id,
+      entity.createdAt,
+      entity.updatedAt,
+      entity.active,
+    );
+  }
 
-    static toDomain(entity: MunicipalityEntity): Municipality {
-        return new Municipality(
-            entity.name,
-            entity.state.id,
-            entity.id,
-            entity.createdAt,
-            entity.updatedAt,
-            entity.active
-        );
-    }
-
-    static toPersistence(Municipality: Municipality): DeepPartial<MunicipalityEntity> {
-        return {
-            ...(Municipality.getId && { id: Municipality.getId }),
-            name:    Municipality.getName,
-            active:  Municipality.getActive,
-            state: { id: Municipality.getIdState }
-        };
-    }
-  
+  static toPersistence(Municipality: Municipality): DeepPartial<MunicipalityEntity> {
+    return {
+      ...(Municipality.getId && { id: Municipality.getId }),
+      name: Municipality.getName,
+      active: Municipality.active,
+      state: { id: Municipality.getIdState },
+    };
+  }
 }

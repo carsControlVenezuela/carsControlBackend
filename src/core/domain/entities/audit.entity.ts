@@ -20,15 +20,29 @@ export class AuditEntity {
   }
 
   //Getters
-  get getCreatedAt(): Date { return this._createdAt; }
-  get getUpdatedAt(): Date { return this._updatedAt; }
-  get getActive(): boolean { return this._active; }
-  get getCreatedBy(): string | undefined { return this._createdBy; }
-  get getUpdatedBy(): string | undefined { return this._updatedBy; }
+  get createdAt(): Date {
+    return this._createdAt;
+  }
+  get updatedAt(): Date {
+    return this._updatedAt;
+  }
+  get active(): boolean {
+    return this._active;
+  }
+  get getCreatedBy(): string | undefined {
+    return this._createdBy;
+  }
+  get getUpdatedBy(): string | undefined {
+    return this._updatedBy;
+  }
 
   //Setters
-  set setActive(value: boolean) { this._active = value; }
-  set setUpdatedBy(value: string) { this._updatedBy = value; }
+  set setActive(value: boolean) {
+    this._active = value;
+  }
+  set setUpdatedBy(value: string) {
+    this._updatedBy = value;
+  }
 
   //Método para actualizar la fecha de actualización
   touch(): void {
@@ -47,7 +61,7 @@ export class AuditEntity {
     this._updatedAt = new Date();
   }
 
-  //Método para alternar el estado activo/inactivo  
+  //Método para alternar el estado activo/inactivo
   toggle(): void {
     this._active = !this._active;
     this._updatedAt = new Date();

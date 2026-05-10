@@ -1,26 +1,27 @@
-import { ILogger } from "../../../../../core/domain/logger/logger.interface";
-import { AppLogger } from "../../../../../core/infrastructure/logger/winston.logger";
-import { IStateRepository } from "../../domain/repositories/iState.repository";
-import { findStateOrFail } from "../helpers/findStateOrFail.helper";
-import { IUpdateStateDisablePort } from "../ports/iUpdateStateDisable.port";
+import { ILogger } from '../../../../../core/domain/logger/logger.interface';
+import { AppLogger } from '../../../../../core/infrastructure/logger/winston.logger';
+import { IStateRepository } from '../../domain/repositories/iState.repository';
+import { findStateOrFail } from '../helpers/findStateOrFail.helper';
+import { IUpdateStateDisablePort } from '../ports/iUpdateStateDisable.port';
 
 export class UpdateStateDisableUseCase implements IUpdateStateDisablePort {
+  private readonly logger: ILogger = AppLogger;
 
-    private readonly logger: ILogger = AppLogger;
+  constructor(private stateRepository: IStateRepository) {}
 
-    constructor(private stateRepository: IStateRepository) {}
+  async execute(id: string): Promise<void> {
+    this.logger.info(`Actualizando el estado deshabilitado del estado con id ${id}`, {
+      context: 'UpdateStateDisableUseCase',
+    });
 
-    async execute(id: string): Promise<void> {
+    const state = await findStateOrFail(this.stateRepository, id);
 
-        this.logger.info(`Actualizando el estado deshabilitado del estado con id ${id}`, {context: 'UpdateStateDisableUseCase'});
+    state.deactivate();
 
-        const state = await findStateOrFail(this.stateRepository, id);
+    await this.stateRepository.update(state);
 
-        state.deactivate();
-
-        await this.stateRepository.update(state);
-
-        this.logger.info(`Se ha eliminado estado con id ${id} ha sido actualizado`, {context: 'UpdateStateDisableUseCase'});
-
-    }
+    this.logger.info(`Se ha eliminado estado con id ${id} ha sido actualizado`, {
+      context: 'UpdateStateDisableUseCase',
+    });
+  }
 }

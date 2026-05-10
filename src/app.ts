@@ -1,5 +1,5 @@
 import express, { Application } from 'express';
-import countryRouter from "./config/location/country/infrastructure/http/routers/country.routes";
+import countryRouter from './config/location/country/infrastructure/http/routers/country.routes';
 import { errorHandler } from './core/infrastructure/middlewares/errorHandler.middleware';
 import { httpLogger } from './core/infrastructure/logger/morgan.middleware';
 import stateRouter from './config/location/state/infrastructure/http/routers/state.route';
@@ -7,6 +7,9 @@ import authRouter from './auth/infrastructure/http/routers/auth.route';
 import { authenticate } from './auth/infrastructure/middlewares/authenticate.middleware';
 import ParishRouter from './config/location/parish/infrastructure/http/routers/state.route';
 import personRouter from './person/infrastructure/http/routers/person.route';
+import brandRouter from './brand/infrastructure/http/routers/brand.route';
+import modelRouter from './model/infrastructure/http/routers/model.route';
+import vehicleRouter from './vehicle/infrastructure/http/routers/vehicle.route';
 
 const app: Application = express();
 
@@ -20,6 +23,10 @@ app.use('/countries', authenticate, countryRouter);
 app.use('/states', authenticate, stateRouter);
 app.use('/parishes', ParishRouter);
 app.use('/persons', personRouter);
+
+app.use('/api/v1/brands', brandRouter);
+app.use('/api/v1/models', modelRouter);
+app.use('/api/v1/vehicles', vehicleRouter);
 
 app.use(errorHandler);
 
