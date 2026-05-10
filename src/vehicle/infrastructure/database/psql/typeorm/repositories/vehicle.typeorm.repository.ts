@@ -13,9 +13,10 @@ export class VehicleTypeormRepository implements IVehicleRepository {
     this.repository = AppDataSource.getRepository(VehicleEntity);
   }
 
-  async save(vehicle: Vehicle): Promise<void> {
+  async save(vehicle: Vehicle): Promise<Vehicle> {
     const entity = this.toPersistence(vehicle);
-    await this.repository.save(entity);
+    const saved = await this.repository.save(entity as VehicleEntity);
+    return VehicleTypeormMapper.toDomain(saved);
   }
 
   async findById(id: string): Promise<Vehicle | null> {

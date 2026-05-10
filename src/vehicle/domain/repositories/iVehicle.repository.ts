@@ -1,7 +1,7 @@
 import { Vehicle } from '../entities/vehicle.entity';
 
 export interface IVehicleRepository {
-  save(vehicle: Vehicle): Promise<void>;
+  save(vehicle: Vehicle): Promise<Vehicle>;
   findById(id: string): Promise<Vehicle | null>;
   findByPerson(idPerson: string): Promise<Vehicle[]>;
   findByPlate(plate: string): Promise<Vehicle | null>;

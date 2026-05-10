@@ -13,9 +13,10 @@ export class BrandTypeormRepository implements IBrandRepository {
     this.repository = AppDataSource.getRepository(BrandEntity);
   }
 
-  async save(brand: Brand): Promise<void> {
+  async save(brand: Brand): Promise<Brand> {
     const entity = this.toPersistence(brand);
-    await this.repository.save(entity);
+    const saved = await this.repository.save(entity as BrandEntity);
+    return BrandTypeormMapper.toDomain(saved);
   }
 
   async findById(id: string): Promise<Brand | null> {

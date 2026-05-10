@@ -1,6 +1,7 @@
 import { ILogger } from '../../../core/domain/logger/logger.interface';
 import { AppLogger } from '../../../core/infrastructure/logger/winston.logger';
 import { IVehicleRepository } from '../../domain/repositories/iVehicle.repository';
+import { Vehicle } from '../../domain/entities/vehicle.entity';
 import { VehicleRequestDto } from '../dtos/requests/vehicle.request.dto';
 import { VehicleMapper } from '../mappers/vehicle.mapper';
 import { ICreateVehiclePort } from '../ports/iCreateVehicle.port';
@@ -15,14 +16,15 @@ export class CreateVehicleUseCase implements ICreateVehiclePort {
     private readonly modelRepository: IModelRepository,
   ) {}
 
-  async execute(request: VehicleRequestDto, modelRepository: IModelRepository): Promise<void> {
+  async execute(request: VehicleRequestDto, modelRepository: IModelRepository): Promise<Vehicle> {
     this.logger.info('Creating vehicle', { context: 'CreateVehicleUseCase', plate: request.plate });
 
     const model = await modelRepository.findById(request.idModel);
     if (!model) throw new ModelNotFoundException(request.idModel);
 
-    await this.vehicleRepository.save(VehicleMapper.toDomain(request));
+    const vehicle = await this.vehicleRepository.save(VehicleMapper.toDomain(request));
 
     this.logger.info('Vehicle created successfully', { context: 'CreateVehicleUseCase' });
+    return vehicle;
   }
 }

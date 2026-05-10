@@ -13,9 +13,10 @@ export class ModelTypeormRepository implements IModelRepository {
     this.repository = AppDataSource.getRepository(ModelEntity);
   }
 
-  async save(model: Model): Promise<void> {
+  async save(model: Model): Promise<Model> {
     const entity = this.toPersistence(model);
-    await this.repository.save(entity);
+    const saved = await this.repository.save(entity as ModelEntity);
+    return ModelTypeormMapper.toDomain(saved);
   }
 
   async findById(id: string): Promise<Model | null> {

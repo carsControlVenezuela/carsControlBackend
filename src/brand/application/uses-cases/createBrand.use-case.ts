@@ -1,5 +1,6 @@
 import { ILogger } from '../../../core/domain/logger/logger.interface';
 import { AppLogger } from '../../../core/infrastructure/logger/winston.logger';
+import { Brand } from '../../domain/entities/brand.entity';
 import { BrandAlreadyExistsException } from '../../domain/exceptions/brandAlreadyExists.exception';
 import { IBrandRepository } from '../../domain/repositories/iBrand.repository';
 import { BrandRequestDto } from '../dtos/requests/brand.request.dto';
@@ -11,14 +12,15 @@ export class CreateBrandUseCase implements ICreateBrandPort {
 
   constructor(private readonly brandRepository: IBrandRepository) {}
 
-  async execute(request: BrandRequestDto): Promise<void> {
+  async execute(request: BrandRequestDto): Promise<Brand> {
     this.logger.info('Creating brand', { context: 'CreateBrandUseCase', name: request.name });
 
     const exists = await this.brandRepository.findByName(request.name);
     if (exists) throw new BrandAlreadyExistsException(request.name);
 
-    await this.brandRepository.save(BrandMapper.toDomain(request));
+    const brand = await this.brandRepository.save(BrandMapper.toDomain(request));
 
     this.logger.info('Brand created successfully', { context: 'CreateBrandUseCase' });
+    return brand;
   }
 }

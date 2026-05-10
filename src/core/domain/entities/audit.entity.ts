@@ -29,10 +29,10 @@ export class AuditEntity {
   get active(): boolean {
     return this._active;
   }
-  get getCreatedBy(): string | undefined {
+  get createdBy(): string | undefined {
     return this._createdBy;
   }
-  get getUpdatedBy(): string | undefined {
+  get updatedBy(): string | undefined {
     return this._updatedBy;
   }
 
