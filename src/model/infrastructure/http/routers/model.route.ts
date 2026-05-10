@@ -13,6 +13,8 @@ import { GetModelsByBrandController } from '../controllers/getModelsByBrand.cont
 import { DeleteModelController } from '../controllers/deleteModel.controller';
 import { validateDto } from '../../../../core/infrastructure/middlewares/validateDto.middleware';
 import { CreateModelRequestDto } from '../dtos/requests/createModel.request.dto';
+import { ValidUUIDRequestDto } from '../../../../core/infrastructure/dtos/request/validUUID.request.dto';
+import { ValidBrandUUIDRequestDto } from '../dtos/requests/validBrandUUID.request.dto';
 
 const modelRepository = new ModelTypeormRepository();
 const brandRepository = new BrandTypeormRepository();
@@ -33,8 +35,16 @@ const modelRouter = Router();
 
 modelRouter.post('/', validateDto(CreateModelRequestDto), createModelController.create);
 modelRouter.get('/', getAllModelsController.getAll);
-modelRouter.get('/brand/:idBrand', getModelsByBrandController.getByBrand);
-modelRouter.get('/:id', getModelByIdController.getById);
-modelRouter.delete('/:id', deleteModelController.delete);
+modelRouter.get(
+  '/brand/:idBrand',
+  validateDto(ValidBrandUUIDRequestDto, 'params'),
+  getModelsByBrandController.getByBrand,
+);
+modelRouter.get('/:id', validateDto(ValidUUIDRequestDto, 'params'), getModelByIdController.getById);
+modelRouter.delete(
+  '/:id',
+  validateDto(ValidUUIDRequestDto, 'params'),
+  deleteModelController.delete,
+);
 
 export default modelRouter;

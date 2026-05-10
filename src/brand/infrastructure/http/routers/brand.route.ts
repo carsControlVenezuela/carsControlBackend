@@ -10,7 +10,7 @@ import { GetBrandByIdController } from '../controllers/getBrandById.controller';
 import { DeleteBrandController } from '../controllers/deleteBrand.controller';
 import { validateDto } from '../../../../core/infrastructure/middlewares/validateDto.middleware';
 import { CreateBrandRequestDto } from '../dtos/requests/createBrand.request.dto';
-import { ValidUUIDRequestDto } from '../../../../core/infrastructure/dtos/request/valid-uuid.request.dto';
+import { ValidUUIDRequestDto } from '../../../../core/infrastructure/dtos/request/validUUID.request.dto';
 
 const brandRepository = new BrandTypeormRepository();
 

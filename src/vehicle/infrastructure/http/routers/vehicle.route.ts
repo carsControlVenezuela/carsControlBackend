@@ -14,6 +14,8 @@ import { DeleteVehicleController } from '../controllers/deleteVehicle.controller
 import { validateDto } from '../../../../core/infrastructure/middlewares/validateDto.middleware';
 import { CreateVehicleRequestDto } from '../dtos/requests/createVehicle.request.dto';
 import { UpdateVehicleRequestDto } from '../dtos/requests/updateVehicle.request.dto';
+import { ValidUUIDRequestDto } from '../../../../core/infrastructure/dtos/request/validUUID.request.dto';
+import { ValidPersonUUIDRequestDto } from '../dtos/requests/validPersonUUID.request.dto';
 
 const vehicleRepository = new VehicleTypeormRepository();
 const modelRepository = new ModelTypeormRepository();
@@ -35,9 +37,26 @@ const deleteVehicleController = new DeleteVehicleController(deleteVehicleUseCase
 const vehicleRouter = Router();
 
 vehicleRouter.post('/', validateDto(CreateVehicleRequestDto), createVehicleController.create);
-vehicleRouter.get('/person/:idPerson', getVehiclesByPersonController.getByPerson);
-vehicleRouter.get('/:id', getVehicleByIdController.getById);
-vehicleRouter.put('/:id', validateDto(UpdateVehicleRequestDto), updateVehicleController.update);
-vehicleRouter.delete('/:id', deleteVehicleController.delete);
+vehicleRouter.get(
+  '/person/:idPerson',
+  validateDto(ValidPersonUUIDRequestDto, 'params'),
+  getVehiclesByPersonController.getByPerson,
+);
+vehicleRouter.get(
+  '/:id',
+  validateDto(ValidUUIDRequestDto, 'params'),
+  getVehicleByIdController.getById,
+);
+vehicleRouter.put(
+  '/:id',
+  validateDto(ValidUUIDRequestDto, 'params'),
+  validateDto(UpdateVehicleRequestDto),
+  updateVehicleController.update,
+);
+vehicleRouter.delete(
+  '/:id',
+  validateDto(ValidUUIDRequestDto, 'params'),
+  deleteVehicleController.delete,
+);
 
 export default vehicleRouter;
