@@ -25,7 +25,7 @@ const getModelByIdUseCase = new GetModelByIdUseCase(modelRepository);
 const getModelsByBrandUseCase = new GetModelsByBrandUseCase(modelRepository);
 const deleteModelUseCase = new DeleteModelUseCase(modelRepository.delete.bind(modelRepository));
 
-const createModelController = new CreateModelController(createModelUseCase, brandRepository);
+const createModelController = new CreateModelController(createModelUseCase);
 const getAllModelsController = new GetAllModelsController(getAllModelsUseCase);
 const getModelByIdController = new GetModelByIdController(getModelByIdUseCase);
 const getModelsByBrandController = new GetModelsByBrandController(getModelsByBrandUseCase);

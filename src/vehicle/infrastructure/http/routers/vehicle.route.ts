@@ -28,7 +28,7 @@ const deleteVehicleUseCase = new DeleteVehicleUseCase(
   vehicleRepository.delete.bind(vehicleRepository),
 );
 
-const createVehicleController = new CreateVehicleController(createVehicleUseCase, modelRepository);
+const createVehicleController = new CreateVehicleController(createVehicleUseCase);
 const getVehicleByIdController = new GetVehicleByIdController(getVehicleByIdUseCase);
 const getVehiclesByPersonController = new GetVehiclesByPersonController(getVehiclesByPersonUseCase);
 const updateVehicleController = new UpdateVehicleController(updateVehicleUseCase);

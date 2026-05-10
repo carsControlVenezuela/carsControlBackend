@@ -16,14 +16,14 @@ export class CreateModelUseCase implements ICreateModelPort {
     private readonly brandRepository: IBrandRepository,
   ) {}
 
-  async execute(request: ModelRequestDto, brandRepository: IBrandRepository): Promise<Model> {
+  async execute(request: ModelRequestDto): Promise<Model> {
     this.logger.info('Creating model', {
       context: 'CreateModelUseCase',
       name: request.name,
       idBrand: request.idBrand,
     });
 
-    const brand = await brandRepository.findById(request.idBrand);
+    const brand = await this.brandRepository.findById(request.idBrand);
     if (!brand) throw new BrandNotFoundException(request.idBrand);
 
     const model = await this.modelRepository.save(ModelMapper.toDomain(request));

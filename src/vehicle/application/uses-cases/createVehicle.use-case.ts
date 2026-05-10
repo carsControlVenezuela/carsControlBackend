@@ -16,10 +16,10 @@ export class CreateVehicleUseCase implements ICreateVehiclePort {
     private readonly modelRepository: IModelRepository,
   ) {}
 
-  async execute(request: VehicleRequestDto, modelRepository: IModelRepository): Promise<Vehicle> {
+  async execute(request: VehicleRequestDto): Promise<Vehicle> {
     this.logger.info('Creating vehicle', { context: 'CreateVehicleUseCase', plate: request.plate });
 
-    const model = await modelRepository.findById(request.idModel);
+    const model = await this.modelRepository.findById(request.idModel);
     if (!model) throw new ModelNotFoundException(request.idModel);
 
     const vehicle = await this.vehicleRepository.save(VehicleMapper.toDomain(request));
