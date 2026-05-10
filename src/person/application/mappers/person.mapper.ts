@@ -1,5 +1,5 @@
 import { Person } from '../../domain/entities/person.entity';
-import { UpdatePersonInputDto } from '../dtos/requests/updatePerson.request.dto';
+import { UpdatePersonRequestDto } from '../dtos/requests/updatePerson.request.dto';
 import { PersonResponseDto } from '../dtos/responses/person.response.dto';
 
 export class PersonMapper {
@@ -28,7 +28,7 @@ export class PersonMapper {
         };
     }
 
-    static merge(existing: Person, dto: UpdatePersonInputDto): Person {
+    static merge(existing: Person, dto: UpdatePersonRequestDto): Person {
         if (dto.firstName) { existing.setFirstName = dto.firstName; }
         if (dto.lastName) { existing.setLastName = dto.lastName; }
         if (dto.cedula) { existing.setCedula = dto.cedula; }
