@@ -4,7 +4,6 @@ import { UserEntity } from '../psql/typeorm/entities/user.typeorm.entity';
 import { User } from '../../../domain/entities/user.entity';
 
 export class UserTypeormRepository implements IUserRepository {
-    
     private readonly repo: Repository<UserEntity>;
 
     constructor(dataSource: DataSource) {

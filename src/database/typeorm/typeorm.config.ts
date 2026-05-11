@@ -12,6 +12,9 @@ import { PersonEntity } from '../../person/infrastructure/database/psql/typeorm/
 import { MunicipalityEntity } from '../../config/location/municipality/infrastructure/database/psql/typeorm/entities/municipality.typeorm.entity';
 import { ParishEntity } from '../../config/location/parish/infrastructure/database/psql/typeorm/entities/parish.typeorm.entity';
 
+import { BrandEntity } from '../../config/vehicle/brand/infrastructure/database/psql/typeorm/entities/brand.typeorm.entity';
+import { ModelEntity } from '../../config/vehicle/model/infrastructure/database/psql/typeorm/entities/model.typeorm.entity';
+import { VehicleEntity } from '../../vehicle/infrastructure/database/psql/typeorm/entities/vehicle.typeorm.entity';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -31,6 +34,9 @@ export const AppDataSource = new DataSource({
     PermissionEntity,
     RefreshTokenEntity,
     PersonEntity,
+    BrandEntity,
+    ModelEntity,
+    VehicleEntity,
   ],
   migrations: ['src/database/typeorm/migrations/*.ts'],
   synchronize: false,
