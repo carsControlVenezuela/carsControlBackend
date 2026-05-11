@@ -13,9 +13,9 @@ export class PermissionMapper {
             resource: permission.getResource,
             action: permission.getAction,
             description: permission.getDescription,
-            active: permission.getActive,
-            createdAt: permission.getCreatedAt,
-            updatedAt: permission.getUpdatedAt
+            active: permission.active,
+            createdAt: permission.createdAt,
+            updatedAt: permission.updatedAt
         };
     }
 

@@ -24,10 +24,10 @@ export class RoleTypeormMapper {
 
         return {
             ...(role.getId && { id: role.getId }),
-            name:        role.getName,
+            name: role.getName,
             description: role.getDescription,
-            active:      role.getActive,
-            updatedAt:   role.getUpdatedAt
+            active: role.active,
+            updatedAt: role.updatedAt
         };
         
     }

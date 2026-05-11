@@ -14,9 +14,9 @@ export class RoleMapper {
             name:  role.getName,
             description: role.getDescription,
             permissions: role.getPermissions.map(PermissionMapper.toResponse),
-            active: role.getActive,
-            createdAt: role.getCreatedAt,
-            updatedAt: role.getUpdatedAt
+            active: role.active,
+            createdAt: role.createdAt,
+            updatedAt: role.updatedAt
         };
     }
 

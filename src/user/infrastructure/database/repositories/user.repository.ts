@@ -33,7 +33,7 @@ export class UserTypeormRepository implements IUserRepository {
             ...(user.getId && { id: user.getId }),
             email: user.getEmail,
             password: user.getPassword,
-            active: user.getActive
+            active: user.active
         });
         const saved = await this.repo.save(entity);
         return this.toDomain(saved);
