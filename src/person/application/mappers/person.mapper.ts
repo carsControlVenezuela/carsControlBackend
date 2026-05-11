@@ -3,28 +3,30 @@ import { UpdatePersonRequestDto } from '../dtos/requests/updatePerson.request.dt
 import { PersonResponseDto } from '../dtos/responses/person.response.dto';
 
 export class PersonMapper {
-  static toResponse(person: Person): PersonResponseDto {
-    if (!person.getId) {
-      throw new Error('Persona sin identificación no se puede asignar a la respuesta');
-    }
 
-    return {
-      id: person.getId,
-      idUser: person.getIdUser,
-      //idPostalZone: person.getIdPostalZone,
-      cedula: person.getCedula,
-      firstName: person.getFirstName,
-      lastName: person.getLastName,
-      birthday: person.getBirthday,
-      gender: person.getGender,
-      avatar: person.getAvatar,
-      middleName: person.getMiddleName,
-      secondName: person.getSecondName,
-      active: person.active,
-      createdAt: person.createdAt,
-      updatedAt: person.updatedAt,
-    };
-  }
+    static toResponse(person: Person): PersonResponseDto {
+
+      if (!person.getId) {
+        throw new Error('Persona sin identificación no se puede asignar a la respuesta');
+      }
+
+      return {
+        id: person.getId,
+        idUser: person.getIdUser,
+        //idPostalZone: person.getIdPostalZone,
+        cedula: person.getCedula,
+        firstName: person.getFirstName,
+        lastName: person.getLastName,
+        birthday: person.getBirthday,
+        gender: person.getGender,
+        avatar: person.getAvatar,
+        middleName: person.getMiddleName,
+        secondName: person.getSecondName,
+        active: person.active,
+        createdAt: person.createdAt,
+        updatedAt: person.updatedAt,
+      };
+    }
 
     static merge(existing: Person, dto: UpdatePersonRequestDto): Person {
         if (dto.firstName) { existing.setFirstName = dto.firstName; }
@@ -36,7 +38,5 @@ export class PersonMapper {
         //if (dto.idPostalZone) {existing.setIdPostalZone = dto.idPostalZone;}
         return existing;
     }
-    //if (dto.idPostalZone) {existing.setIdPostalZone = dto.idPostalZone;}
-    return existing;
-  }
+  
 }
