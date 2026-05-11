@@ -15,7 +15,7 @@ import { LoginRequestDTO } from '../dtos/requests/login.request.dto';
 import { RegisterRequestDTO } from '../dtos/requests/register.request.dto';
 import { PersonRepository } from '../../../../person/infrastructure/database/repositories/person.repository';
 import { PersonEntity } from '../../../../person/infrastructure/database/psql/typeorm/entities/person.typeorm.entity';
-import { RoleTypeormRepository } from '../../../../role/infrastructure/database/repositories/role.repository';
+import { RoleRepository } from '../../../../role/infrastructure/database/repositories/role.repository';
 import { RoleEntity } from '../../../../role/infrastructure/database/psql/typeorm/entities/role.typeorm.entity';
 
 const authRouter = Router();
@@ -26,7 +26,7 @@ const personRepository = new PersonRepository(personTypeormRepo);
 
 //Mejorar
 const roleTypeormRepo = AppDataSource.getRepository(RoleEntity);
-const roleRepository = new RoleTypeormRepository(roleTypeormRepo);
+const roleRepository = new RoleRepository(roleTypeormRepo);
 
 const userRepository = new UserTypeormRepository(AppDataSource);
 const authRepository = new AuthTypeormRepository(AppDataSource);
