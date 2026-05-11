@@ -26,8 +26,8 @@ export class RegisterRequestDTO implements RegisterInputDto {
 
     @IsNotEmpty({ message: 'La cédula es requerida' })
     @IsString({ message: 'La cédula debe ser una cadena de texto' })
-    @MinLength(4, { message: 'La cédula debe tener al menos 4 dígitos' })
-    @MaxLength(20, { message: 'La cédula no puede exceder los 20 dígitos' })
+    @MinLength(1, { message: 'La cédula debe tener al menos 4 dígitos' })
+    @MaxLength(8, { message: 'La cédula no puede exceder los 20 dígitos' })
     cedula!: string;
 
     @IsNotEmpty({ message: 'La fecha de nacimiento es requerida' })
@@ -35,12 +35,12 @@ export class RegisterRequestDTO implements RegisterInputDto {
     birthday!: Date;
 
     @IsNotEmpty({ message: 'El género es requerido' })
-    @IsIn(['Masculino', 'Femenino'], { message: 'El género debe ser Masculino, Femenino' })
+    @IsIn(['Masculino', 'Femenino'], { message: 'El género debe ser Masculino o Femenino' })
     gender!: string;
 
     // @IsNotEmpty({message: 'El id de la zona postal es requerido'})
     // @IsUUID('4', { message: 'El id de la zona postal debe ser un UUID válido' })
-    // idPostalZOne!: string;
+    // idPostalZone!: string;
 
     @IsString()
     @IsOptional()

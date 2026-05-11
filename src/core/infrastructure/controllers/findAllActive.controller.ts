@@ -8,7 +8,6 @@ export class FindAllActiveController<T> {
 
     getAllActive = async (req: Request, res: Response, next: NextFunction) : Promise<void> => {
         try {
-            console.log("Entro en el controlador")
             AppResponse.ok(
                 res,
                 await this.findAllActiveUseCase.execute(),

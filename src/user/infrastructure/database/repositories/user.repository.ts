@@ -31,7 +31,7 @@ export class UserTypeormRepository implements IUserRepository {
 
     async save(user: User): Promise<User> {
         const entity = this.repo.create({
-            id: user.getId,
+            ...(user.getId && { id: user.getId }),
             email: user.getEmail,
             password: user.getPassword,
             active: user.getActive

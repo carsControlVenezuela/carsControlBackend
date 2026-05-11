@@ -7,7 +7,7 @@ export class GetStatesByCountryController {
     constructor(private readonly getStatesByCountryPort: IGetStatesByCountryPort) {}
 
     getStatesByCountry = async (req: Request, res: Response, next: NextFunction) : Promise<void> => {
-        console.log('GetStatesByCountryController: ', req.params.country);
+
         try {
             AppResponse.ok(
                 res,

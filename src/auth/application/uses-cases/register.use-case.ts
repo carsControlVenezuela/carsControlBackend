@@ -32,11 +32,11 @@ export class RegisterUseCase implements IRegisterPort {
         //Obtener el rol USER con sus permisos
         const userRole = await this.roleRepository.findByName('USER');
 
-        const permissions = userRole?.getPermissions ?? [];
+        const permissions = userRole?.getPermissions.map(p => `${p.getResource}:${p.getAction}`) ?? [];
 
         const hashedPassword = await bcrypt.hash(request.password, 12);
 
-        const user = new User(request.email, hashedPassword, ['USER'], permissions, uuidv4());
+        const user = new User(request.email, hashedPassword, ['USER'], permissions);
 
         const saved = await this.userRepository.save(user);
 
@@ -54,8 +54,7 @@ export class RegisterUseCase implements IRegisterPort {
             request.gender,
             undefined,
             request.middleName,
-            request.secondName,
-            uuidv4()
+            request.secondName
         );
         
         await this.personRepository.save(person);
