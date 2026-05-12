@@ -21,7 +21,7 @@ const createBrandUseCase = new CreateBrandUseCase(brandRepository);
 const getAllBrandsUseCase = new GetAllBrandsUseCase(brandRepository);
 const getBrandByIdUseCase = new GetBrandByIdUseCase(brandRepository);
 const updateBrandUseCase = new UpdateBrandUseCase(brandRepository);
-const deleteBrandUseCase = new DeleteBrandUseCase(brandRepository.delete.bind(brandRepository));
+const deleteBrandUseCase = new DeleteBrandUseCase(brandRepository);
 
 const createBrandController = new CreateBrandController(createBrandUseCase);
 const getAllBrandsController = new GetAllBrandsController(getAllBrandsUseCase);
