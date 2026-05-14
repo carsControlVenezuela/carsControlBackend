@@ -43,7 +43,7 @@ export class LoginUseCase implements ILoginPort {
     return {
       accessToken,
       refreshToken,
-      expiresIn: 900, // 15 minutos en segundos
+      expiresIn: parseInt(process.env.JWT_EXPIRES_IN_SECONDS || '900'),
       user: { id: user.getId!, email: user.getEmail, roles },
     };
   }
