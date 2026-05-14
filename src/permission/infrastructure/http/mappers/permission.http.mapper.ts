@@ -24,7 +24,7 @@ export class PermissionTypeormMapper {
             resource: permission.getResource,
             action: permission.getAction,
             description: permission.getDescription,
-            active: permission.getActive
+            active: permission.active
         };
     }
 }

@@ -1,5 +1,4 @@
 import bcrypt from 'bcryptjs';
-import { v4 as uuidv4 } from 'uuid';
 import { IRegisterPort } from '../ports/register.port';
 import { User } from '../../../user/domain/entities/user.entity';
 import { IUserRepository } from '../../../user/domain/repositories/iUser.repository';
@@ -11,6 +10,7 @@ import { jwtService } from '../../infrastructure/http/jwt/jwt.service';
 import { IPersonRepository } from '../../../person/domain/repositories/iPerson.repository';
 import { IRoleRepository } from '../../../role/domain/repositories/iRole.repository';
 import { Person } from '../../../person/domain/entities/person.entity';
+import { RoleNotFoundException } from '../../../role/domain/exceptions/roleNotFound.exception';
 
 export class RegisterUseCase implements IRegisterPort {
 
@@ -23,27 +23,32 @@ export class RegisterUseCase implements IRegisterPort {
 
     async execute(request: RegisterInputDto): Promise<AuthResponseDto> {
 
-        const exists = await this.userRepository.findByEmail(request.email); //Busca por email ya que es la unica forma de buscar si existe o no el usuario antes de registrarlo, ya que el id se genera al momento de guardar el usuario y no lo tenemos antes de eso.  
+        //Busca por email ya que es la unica forma de buscar si existe o no el usuario antes de registrarlo, ya que el id se genera al momento de guardar el usuario y no lo tenemos antes de eso.  
+        const exists = await this.userRepository.findByEmail(request.email);
 
         if (exists) {
             throw new UserAlreadyExistsException(request.email);
         }
         
-        //Obtener el rol USER con sus permisos
-        const userRole = await this.roleRepository.findByName('USER');
+        //Busca el rol que el usuario eligió
+        const role = await this.roleRepository.findById(request.roleId);
+        
+        if (!role) {
+            throw new RoleNotFoundException(request.roleId);
+        }
 
-        const permissions = userRole?.getPermissions.map(p => `${p.getResource}:${p.getAction}`) ?? [];
+        const permissions = role?.getPermissions.map(p => `${p.getResource}:${p.getAction}`) ?? [];
 
-        const hashedPassword = await bcrypt.hash(request.password, 12);
+        const hashedPassword = await bcrypt.hash(request.password, parseInt(process.env.BCRYPT_SALT_ROUNDS || '12'));
 
-        const user = new User(request.email, hashedPassword, ['USER'], permissions);
+        const user = new User(request.email, hashedPassword, [role.getName], permissions);
 
         const saved = await this.userRepository.save(user);
 
         //Asignar rol USER en DB
-        await this.userRepository.assignRole(saved.getId!, userRole!.getId!);
+        await this.userRepository.assignRole(saved.getId!, role!.getId!);
 
-        // crear Person asociada al User
+        //Crear Person asociada al User
         const person = new Person(
             saved.getId!,
             //request.idPostalZone,
@@ -52,7 +57,7 @@ export class RegisterUseCase implements IRegisterPort {
             request.lastName,
             new Date(request.birthday),
             request.gender,
-            undefined,
+            request.avatar,
             request.middleName,
             request.secondName
         );
@@ -62,7 +67,7 @@ export class RegisterUseCase implements IRegisterPort {
         const payload = {
             userId: saved.getId!,
             email: saved.getEmail,
-            roles: ['USER'],
+            roles: [role.getName],
             permissions
         };
 
@@ -75,8 +80,8 @@ export class RegisterUseCase implements IRegisterPort {
         return {
             accessToken,
             refreshToken,
-            expiresIn: 900,
-            user: { id: saved.getId!, email: saved.getEmail, roles: ['USER'] }
+            expiresIn: parseInt(process.env.JWT_EXPIRES_IN_SECONDS || '900'),
+            user: { id: saved.getId!, email: saved.getEmail, roles: [role.getName] }
         };
     }
 }

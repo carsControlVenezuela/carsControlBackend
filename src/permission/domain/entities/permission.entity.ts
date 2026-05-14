@@ -19,10 +19,10 @@ export class Permission extends AuditEntity {
         active?: boolean
     ) {
         super(createdAt, updatedAt, active);
-        this._id          = id;
-        this._name        = name;
-        this._resource    = resource;
-        this._action      = action;
+        this._id = id;
+        this._name = name;
+        this._resource = resource;
+        this._action = action;
         this._description = description;
         this.validate();
     }
