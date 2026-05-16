@@ -6,7 +6,7 @@ import { UpdateStateUseCase } from "../../../application/uses-cases/updateState.
 import { CreateStateController } from "../controllers/createState.controller";
 import { UpdateStateController } from "../controllers/updateState.controller";
 import { validateDto } from "../../../../../../core/infrastructure/middlewares/validateDto.middleware";
-import { CreateStateRequestDTO } from "../dtos/requests/createState.request.dto";
+import { CreateStateRequestDTO } from '../dtos/requests/createState.request.dto';
 import { UpdateStateRequestDTO } from "../dtos/requests/updateState.request.dto";
 import { FindByIdUseCase } from "../../../../../../core/application/use-cases/findById.use-case";
 import { FindByIdController } from "../../../../../../core/infrastructure/controllers/findById.controller";
@@ -29,22 +29,27 @@ import { GetStatesByCountryController } from "../controllers/getStatesByCountry.
 import { FindAllActivePaginatedUseCase } from "../../../../../../core/application/use-cases/findAllActivePaginated.use-case";
 import { FindAllPaginatedUseCase } from "../../../../../../core/application/use-cases/findAllPaginated.use-case";
 import { FindAllPaginatedController } from "../../../../../../core/infrastructure/controllers/findAllPaginated.controller";
+import { CountryRepository } from "../../../../country/infrastructure/database/repositories/country.repository";
+import { CountryEntity } from "../../../../country/infrastructure/database/psql/typeorm/entities/country.typeorm.entity";
 
 const stateRouter = Router();
 
 const stateTypeormRepo = AppDataSource.getRepository(StateEntity);
+const countryTypeormRepo = AppDataSource.getRepository(CountryEntity);
+
 
 const repository = new StateRepository(stateTypeormRepo);
+const repositoryCountry = new CountryRepository(countryTypeormRepo);
 
 //USE-CASES
-const createUseCase = new CreateStateUseCase(repository);                                               //No Generico
+const createUseCase = new CreateStateUseCase(repository,repositoryCountry);                                               //No Generico
 const getByIdUseCase = new FindByIdUseCase(repository, "Estado", StateMapper.toResponse);               //Generico
 const getAllUseCase = new FindAllUseCase(repository, StateMapper.toResponse);                           //Generico
 const getAllActive = new FindAllActiveUseCase(repository, StateMapper.toResponse);                      //Generico
 const getByNameUseCase = new FindByNameUseCase(repository, "Estado", StateMapper.toResponse);           //Generico                            
 const getAllByKeywordsUseCase = new GetAllStatesByKeywordsUseCase(repository);                          //No Generico
 const getStatesByCountryUseCase = new GetStatesByCountryUseCase(repository);                            //No Generico
-const updateUseCase = new UpdateStateUseCase(repository);                                               
+const updateUseCase = new UpdateStateUseCase(repository,repositoryCountry);                                               
 const updateActiveUseCase = new UpdateActiveUseCase(repository, "Estado");                              //Generico
 const updateDisableUseCase = new UpdateDisableUseCase(repository, "Estado");                            //Generico
 

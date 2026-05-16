@@ -13,7 +13,7 @@ export function validateDto(dtoClass: any) {
             stopAtFirstError: true, //Detiene la validación en el primer fallo por campo
             validationError: { target: false, value: false } //Limpia el objeto de error
         };
-
+        console.log(req.body)
         const errors = await validate(dtoInstance, options);
 
         if (errors.length > 0) {

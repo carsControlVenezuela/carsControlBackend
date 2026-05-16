@@ -9,6 +9,8 @@ export class StateMapper {
 
         if (!state.getId) {
             throw new Error('El estado sin identificación no se puede asignar a la respuesta');
+        }else if(!state.getIdCountry){
+            throw new Error('El estado sin identificación de country no se puede asignar a la respuesta');
         }
         return {
             id: state.getId,

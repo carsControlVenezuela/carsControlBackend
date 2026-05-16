@@ -16,7 +16,7 @@ app.use('/auth', authRouter);
 
 //authenticate global: Significa que authenticate se ejecuta antes de cualquier ruta de cualquier módulo.
 app.use('/countries', authenticate, countryRouter);
-app.use('/states', authenticate, stateRouter);
+app.use('/states', authenticate,stateRouter);
 app.use('/parishes', ParishRouter);
 
 app.use(errorHandler);
