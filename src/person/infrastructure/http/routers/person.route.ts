@@ -9,7 +9,6 @@ import { PersonMapper } from "../../../application/mappers/person.mapper";
 import { FindByIdController } from "../../../../core/infrastructure/controllers/findById.controller";
 import { FindAllController } from "../../../../core/infrastructure/controllers/findAll.controller";
 import { FindAllActiveController } from "../../../../core/infrastructure/controllers/findAllActive.controller";
-import { authenticate } from "../../../../auth/infrastructure/middlewares/authenticate.middleware";
 import { UpdateActiveUseCase } from "../../../../core/application/use-cases/updateActive.use-case";
 import { UpdateDisableUseCase } from "../../../../core/application/use-cases/updateDisable.use-case";
 import { UpdateActiveController } from "../../../../core/infrastructure/controllers/updateActive.controller";
