@@ -1,4 +1,4 @@
-import { IsString, MinLength, MaxLength, IsUUID, IsOptional, IsDateString, IsIn } from 'class-validator';
+import { IsString, MinLength, MaxLength, IsOptional, IsDateString, IsIn } from 'class-validator';
 import { UpdatePersonRequestDto } from '../../../../application/dtos/requests/updatePerson.request.dto';
 
 export class UpdatePersonRequestDTO implements UpdatePersonRequestDto {

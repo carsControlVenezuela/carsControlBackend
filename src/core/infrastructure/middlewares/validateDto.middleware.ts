@@ -1,9 +1,9 @@
-import { plainToInstance } from 'class-transformer';
+import { ClassConstructor, plainToInstance } from 'class-transformer';
 import { validate, ValidationError, ValidatorOptions } from 'class-validator';
 import { Request, Response, NextFunction } from 'express';
 import { HttpStatus } from '../../domain/enums/httpStatus.enun';
 
-export function validateDto(dtoClass: any, element: 'body' | 'params' | 'query' = 'body') {
+export function validateDto(dtoClass: ClassConstructor<object>, element: 'body' | 'params' | 'query' = 'body') {
   return async (req: Request, res: Response, next: NextFunction) => {
     const dtoInstance = plainToInstance(dtoClass, req[element]);
 

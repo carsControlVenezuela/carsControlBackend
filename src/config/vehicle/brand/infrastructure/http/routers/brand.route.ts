@@ -1,33 +1,40 @@
 import { Router } from 'express';
+import { AppDataSource } from '../../../../../../database/typeorm/typeorm.config';
+import { BrandEntity } from '../../database/psql/typeorm/entities/brand.typeorm.entity';
 import { BrandTypeormRepository } from '../../database/psql/typeorm/repositories/brand.typeorm.repository';
 import { CreateBrandUseCase } from '../../../application/uses-cases/createBrand.use-case';
-import { GetAllBrandsUseCase } from '../../../application/uses-cases/getAllBrands.use-case';
-import { GetBrandByIdUseCase } from '../../../application/uses-cases/getBrandById.use-case';
 import { UpdateBrandUseCase } from '../../../application/uses-cases/updateBrand.use-case';
-import { DeleteBrandUseCase } from '../../../application/uses-cases/deleteBrand.use-case';
+import { FindAllUseCase } from '../../../../../../core/application/use-cases/findAll.use-case';
+import { FindByIdUseCase } from '../../../../../../core/application/use-cases/findById.use-case';
+import { UpdateActiveUseCase } from '../../../../../../core/application/use-cases/updateActive.use-case';
+import { UpdateDisableUseCase } from '../../../../../../core/application/use-cases/updateDisable.use-case';
 import { CreateBrandController } from '../controllers/createBrand.controller';
-import { GetAllBrandsController } from '../controllers/getAllBrands.controller';
-import { GetBrandByIdController } from '../controllers/getBrandById.controller';
 import { UpdateBrandController } from '../controllers/updateBrand.controller';
-import { DeleteBrandController } from '../controllers/deleteBrand.controller';
+import { FindAllController } from '../../../../../../core/infrastructure/controllers/findAll.controller';
+import { FindByIdController } from '../../../../../../core/infrastructure/controllers/findById.controller';
+import { UpdateActiveController } from '../../../../../../core/infrastructure/controllers/updateActive.controller';
+import { UpdateDisableController } from '../../../../../../core/infrastructure/controllers/updateDisable.controller';
+import { BrandMapper } from '../../../application/mappers/brand.mapper';
 import { validateDto } from '../../../../../../core/infrastructure/middlewares/validateDto.middleware';
 import { CreateBrandRequestDto } from '../dtos/requests/createBrand.request.dto';
 import { UpdateBrandRequestDto } from '../dtos/requests/updateBrand.request.dto';
 import { ValidUUIDRequestDto } from '../../../../../../core/infrastructure/dtos/request/validUUID.request.dto';
 
-const brandRepository = new BrandTypeormRepository();
+const brandRepository = new BrandTypeormRepository(AppDataSource.getRepository(BrandEntity));
 
 const createBrandUseCase = new CreateBrandUseCase(brandRepository);
-const getAllBrandsUseCase = new GetAllBrandsUseCase(brandRepository);
-const getBrandByIdUseCase = new GetBrandByIdUseCase(brandRepository);
+const getAllBrandsUseCase = new FindAllUseCase(brandRepository, BrandMapper.toResponse);
+const getBrandByIdUseCase = new FindByIdUseCase(brandRepository, 'Marca', BrandMapper.toResponse);
 const updateBrandUseCase = new UpdateBrandUseCase(brandRepository);
-const deleteBrandUseCase = new DeleteBrandUseCase(brandRepository);
+const toggleBrandUseCase = new UpdateActiveUseCase(brandRepository, 'Marca');
+const disableBrandUseCase = new UpdateDisableUseCase(brandRepository, 'Marca');
 
 const createBrandController = new CreateBrandController(createBrandUseCase);
-const getAllBrandsController = new GetAllBrandsController(getAllBrandsUseCase);
-const getBrandByIdController = new GetBrandByIdController(getBrandByIdUseCase);
+const getAllBrandsController = new FindAllController(getAllBrandsUseCase);
+const getBrandByIdController = new FindByIdController(getBrandByIdUseCase);
 const updateBrandController = new UpdateBrandController(updateBrandUseCase);
-const deleteBrandController = new DeleteBrandController(deleteBrandUseCase);
+const toggleBrandController = new UpdateActiveController(toggleBrandUseCase);
+const disableBrandController = new UpdateDisableController(disableBrandUseCase);
 
 const brandRouter = Router();
 
@@ -40,10 +47,15 @@ brandRouter.put(
   validateDto(UpdateBrandRequestDto),
   updateBrandController.update,
 );
-brandRouter.delete(
-  '/:id',
+brandRouter.patch(
+  '/:id/toggle',
   validateDto(ValidUUIDRequestDto, 'params'),
-  deleteBrandController.delete,
+  toggleBrandController.updateActive,
+);
+brandRouter.patch(
+  '/:id/disable',
+  validateDto(ValidUUIDRequestDto, 'params'),
+  disableBrandController.updateDisable,
 );
 
 export default brandRouter;

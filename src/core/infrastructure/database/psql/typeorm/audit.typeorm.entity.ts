@@ -1,4 +1,4 @@
-import { CreateDateColumn, UpdateDateColumn, DeleteDateColumn, Column, BaseEntity } from 'typeorm';
+import { CreateDateColumn, UpdateDateColumn, Column, BaseEntity } from 'typeorm';
 
 export abstract class AuditTypeormEntity extends BaseEntity {
   @CreateDateColumn({ name: 'created_at', nullable: false })
@@ -6,9 +6,6 @@ export abstract class AuditTypeormEntity extends BaseEntity {
 
   @UpdateDateColumn({ name: 'updated_at', nullable: false })
   updatedAt!: Date;
-
-  @DeleteDateColumn({ name: 'deleted_at' })
-  deletedAt?: Date;
 
   @Column({ name: 'active', default: true, nullable: false })
   active!: boolean;

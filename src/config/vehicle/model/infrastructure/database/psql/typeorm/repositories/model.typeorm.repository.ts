@@ -1,66 +1,40 @@
-import { DeepPartial } from 'typeorm';
-import { Repository } from 'typeorm';
-import { AppDataSource } from '../../../../../../../../database/typeorm/typeorm.config';
+import { DeepPartial, Repository } from 'typeorm';
 import { Model } from '../../../../../domain/entities/model.entity';
 import { IModelRepository } from '../../../../../domain/repositories/iModel.repository';
+import { BaseTypeormRepository } from '../../../../../../../../core/infrastructure/database/repositories/base.repository';
 import { ModelEntity } from '../entities/model.typeorm.entity';
 import { ModelTypeormMapper } from '../../../../http/mappers/model.http.mapper';
 
-export class ModelTypeormRepository implements IModelRepository {
-  private readonly repository: Repository<ModelEntity>;
+export class ModelTypeormRepository extends BaseTypeormRepository<Model, ModelEntity> implements IModelRepository {
 
-  constructor() {
-    this.repository = AppDataSource.getRepository(ModelEntity);
+  constructor(repo: Repository<ModelEntity>) {
+    super(repo);
+  }
+
+  protected toDomain(entity: ModelEntity): Model {
+    return ModelTypeormMapper.toDomain(entity);
+  }
+
+  protected toPersistence(model: Model): DeepPartial<ModelEntity> {
+    return ModelTypeormMapper.toPersistence(model);
   }
 
   async save(model: Model): Promise<Model> {
-    const entity = this.toPersistence(model);
-    const saved = await this.repository.save(entity as ModelEntity);
+    const saved = await this.repo.save(this.repo.create(ModelTypeormMapper.toPersistence(model)));
     return ModelTypeormMapper.toDomain(saved);
   }
 
-  async findById(id: string): Promise<Model | null> {
-    const entity = await this.repository.findOne({ where: { id } });
-    return entity ? ModelTypeormMapper.toDomain(entity) : null;
-  }
-
-  async findAll(): Promise<Model[]> {
-    const entities = await this.repository.find();
-    return entities.map(ModelTypeormMapper.toDomain);
-  }
-
-  async findByBrand(idBrand: string): Promise<Model[]> {
-    const entities = await this.repository.find({ where: { idBrand } });
-    return entities.map(ModelTypeormMapper.toDomain);
-  }
-
   async findByName(name: string): Promise<Model | null> {
-    const entity = await this.repository
+    const entity = await this.repo
       .createQueryBuilder('model')
       .where('LOWER(model.name) = LOWER(:name)', { name })
       .getOne();
     return entity ? ModelTypeormMapper.toDomain(entity) : null;
   }
 
-  async delete(id: string): Promise<void> {
-    await this.repository.softDelete(id);
+  async findByBrand(idBrand: string): Promise<Model[]> {
+    const entities = await this.repo.find({ where: { idBrand } });
+    return entities.map(e => ModelTypeormMapper.toDomain(e));
   }
 
-  async update(model: Model): Promise<void> {
-    const entity = this.toPersistence(model);
-    await this.repository.save(entity as ModelEntity);
-  }
-
-  private toPersistence(model: Model): DeepPartial<ModelEntity> {
-    return {
-      id: model.id,
-      name: model.name,
-      idBrand: model.idBrand,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
-      active: model.active,
-      createdBy: model.createdBy,
-      updatedBy: model.updatedBy,
-    };
-  }
 }

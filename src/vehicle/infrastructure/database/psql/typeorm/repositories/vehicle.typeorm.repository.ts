@@ -1,66 +1,40 @@
-import { DeepPartial } from 'typeorm';
-import { Repository } from 'typeorm';
-import { AppDataSource } from '../../../../../../database/typeorm/typeorm.config';
+import { DeepPartial, Repository } from 'typeorm';
 import { Vehicle } from '../../../../../domain/entities/vehicle.entity';
 import { IVehicleRepository } from '../../../../../domain/repositories/iVehicle.repository';
+import { BaseTypeormRepository } from '../../../../../../core/infrastructure/database/repositories/base.repository';
 import { VehicleEntity } from '../entities/vehicle.typeorm.entity';
 import { VehicleTypeormMapper } from '../../../../http/mappers/vehicle.http.mapper';
 
-export class VehicleTypeormRepository implements IVehicleRepository {
-  private readonly repository: Repository<VehicleEntity>;
+export class VehicleTypeormRepository extends BaseTypeormRepository<Vehicle, VehicleEntity> implements IVehicleRepository {
 
-  constructor() {
-    this.repository = AppDataSource.getRepository(VehicleEntity);
+  constructor(repo: Repository<VehicleEntity>) {
+    super(repo);
+  }
+
+  protected toDomain(entity: VehicleEntity): Vehicle {
+    return VehicleTypeormMapper.toDomain(entity);
+  }
+
+  protected toPersistence(vehicle: Vehicle): DeepPartial<VehicleEntity> {
+    return VehicleTypeormMapper.toPersistence(vehicle);
   }
 
   async save(vehicle: Vehicle): Promise<Vehicle> {
-    const entity = this.toPersistence(vehicle);
-    const saved = await this.repository.save(entity as VehicleEntity);
+    const saved = await this.repo.save(this.repo.create(VehicleTypeormMapper.toPersistence(vehicle)));
     return VehicleTypeormMapper.toDomain(saved);
   }
 
-  async findById(id: string): Promise<Vehicle | null> {
-    const entity = await this.repository.findOne({ where: { id } });
-    return entity ? VehicleTypeormMapper.toDomain(entity) : null;
-  }
-
   async findByPerson(idPerson: string): Promise<Vehicle[]> {
-    const entities = await this.repository.find({ where: { idPerson } });
-    return entities.map(VehicleTypeormMapper.toDomain);
+    const entities = await this.repo.find({ where: { idPerson } });
+    return entities.map(e => VehicleTypeormMapper.toDomain(e));
   }
 
   async findByPlate(plate: string): Promise<Vehicle | null> {
-    const entity = await this.repository
+    const entity = await this.repo
       .createQueryBuilder('vehicle')
       .where('LOWER(vehicle.plate) = LOWER(:plate)', { plate })
       .getOne();
     return entity ? VehicleTypeormMapper.toDomain(entity) : null;
   }
 
-  async update(vehicle: Vehicle): Promise<void> {
-    const entity = this.toPersistence(vehicle);
-    await this.repository.save(entity);
-  }
-
-  async delete(id: string): Promise<void> {
-    await this.repository.softDelete(id);
-  }
-
-  private toPersistence(vehicle: Vehicle): DeepPartial<VehicleEntity> {
-    return {
-      id: vehicle.id,
-      idPerson: vehicle.idPerson,
-      idModel: vehicle.idModel,
-      year: vehicle.year,
-      color: vehicle.color,
-      purchaseDate: vehicle.purchaseDate,
-      plate: vehicle.plate,
-      mileage: vehicle.mileage,
-      createdAt: vehicle.createdAt,
-      updatedAt: vehicle.updatedAt,
-      active: vehicle.active,
-      createdBy: vehicle.createdBy,
-      updatedBy: vehicle.updatedBy,
-    };
-  }
 }

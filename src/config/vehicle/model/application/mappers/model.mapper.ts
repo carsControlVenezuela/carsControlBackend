@@ -1,10 +1,10 @@
 import { Model } from '../../domain/entities/model.entity';
+import { ModelRequestDto } from '../dtos/requests/model.request.dto';
 import { ModelResponseDto } from '../dtos/responses/model.response.dto';
-import { CreateModelRequestDto } from '../../infrastructure/http/dtos/requests/createModel.request.dto';
 import { UpdateModelRequestDto } from '../dtos/requests/updateModel.request.dto';
 
 export class ModelMapper {
-  static toDomain(dto: CreateModelRequestDto): Model {
+  static toDomain(dto: ModelRequestDto): Model {
     return new Model(dto.name, dto.idBrand);
   }
 
