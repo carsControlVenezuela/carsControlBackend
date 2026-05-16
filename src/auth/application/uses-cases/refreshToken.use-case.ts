@@ -17,7 +17,10 @@ export class RefreshTokenUseCase implements IRefreshTokenPort {
 
     //Verifica que el token existe en DB (no fue revocado por logout)
     const stored = await this.authRepository.findRefreshToken(refreshToken);
-    if (!stored) throw new InvalidTokenException();
+
+    if (!stored) {
+      throw new InvalidTokenException();
+    }
 
     //Verifica que no expiró en DB
     if (stored.expiresAt < new Date()) {
@@ -27,7 +30,10 @@ export class RefreshTokenUseCase implements IRefreshTokenPort {
 
     //Obtiene el usuario con roles y permisos actualizados
     const user = await this.userRepository.findByEmail(stored.userId);
-    if (!user || !user.active) throw new InvalidTokenException();
+
+    if (!user || !user.active) {
+      throw new InvalidTokenException();
+    }
 
     //Genera nuevos tokens (rotación de refresh token)
     const newPayload = {
@@ -48,7 +54,7 @@ export class RefreshTokenUseCase implements IRefreshTokenPort {
     return {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
-      expiresIn: 900,
+      expiresIn: parseInt(process.env.JWT_ACCESS_EXPIRES || '900'),
       user: { id: user.getId!, email: user.getEmail, roles: user.getRoles },
     };
   }

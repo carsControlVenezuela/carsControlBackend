@@ -43,8 +43,6 @@ const updateUseCase = new UpdateCountryUseCase(repository);
 const updateActiveUseCase = new UpdateActiveUseCase(repository, "País");
 const updateDisableUseCase = new UpdateDisableUseCase(repository, "País");
 
-
-
 //CONTROLLERS
 const createCountryController = new CreateCountryController(createUseCase);
 const getCountryByIdController = new FindByIdController(getByIdUseCase);

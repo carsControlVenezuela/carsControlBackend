@@ -42,6 +42,10 @@ export class RegisterRequestDTO implements RegisterInputDto {
     // @IsUUID('4', { message: 'El id de la zona postal debe ser un UUID válido' })
     // idPostalZone!: string;
 
+    @IsNotEmpty({ message: 'El rol es requerido' })
+    @IsUUID('4', { message: 'El id del rol debe ser un UUID válido' })
+    roleId!: string;
+
     @IsString()
     @IsOptional()
     middleName?: string;

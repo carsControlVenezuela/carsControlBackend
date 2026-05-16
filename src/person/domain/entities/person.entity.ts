@@ -80,7 +80,7 @@ export class Person extends AuditEntity {
         this.touch();
     }
 
-    set setAvatar(value: string) { this._avatar     = value; this.touch(); }
+    set setAvatar(value: string) { this._avatar = value; this.touch(); }
     set setMiddleName(value: string) { this._middleName = value; this.touch(); }
     set setSecondName(value: string) { this._secondName = value; this.touch(); }
     // set setIdPostalZone(value: string) { this._idPostalZone = value; this.touch(); }

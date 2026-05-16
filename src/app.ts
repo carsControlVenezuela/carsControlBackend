@@ -10,6 +10,9 @@ import personRouter from './person/infrastructure/http/routers/person.route';
 import brandRouter from './config/vehicle/brand/infrastructure/http/routers/brand.route';
 import modelRouter from './config/vehicle/model/infrastructure/http/routers/model.route';
 import vehicleRouter from './vehicle/infrastructure/http/routers/vehicle.route';
+import roleRouter from './role/infrastructure/http/routers/role.route';
+import permissionRouter from './permission/infrastructure/http/routers/permission.route';
+
 
 const app: Application = express();
 
@@ -19,6 +22,8 @@ app.use(httpLogger);
 app.use('/auth', authRouter);
 
 //authenticate global: Significa que authenticate se ejecuta antes de cualquier ruta de cualquier módulo.
+app.use('/roles', roleRouter);
+app.use('/permissions', permissionRouter);
 app.use('/countries', authenticate, countryRouter);
 app.use('/states', authenticate, stateRouter);
 app.use('/parishes', ParishRouter);

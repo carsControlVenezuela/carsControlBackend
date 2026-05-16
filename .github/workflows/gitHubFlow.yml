@@ -5,12 +5,12 @@ name: Validar políticas de ramas
 # quest en cualquier rama.
 
 on:
-  push:
-    branches:
-      - '**'
   pull_request:
     branches:
-      - '**'
+      - main
+      - develop
+      - testing
+
 
 # jobs.<job_id>: job_id sirve para asignar un identificador unico al trabajo, en este caso se le dio validar-ramas.
 # jobs.<job_id>.name: Sirve para establecer un nombre para el trabajo, que se muesta en la UI de gitHub.
@@ -49,21 +49,11 @@ jobs:
         run: |
           set -euo pipefail
 
-          event_name="${GITHUB_EVENT_NAME:-}" 
-          head_branch=""
-          base_branch=""
-
-          if [[ "$event_name" == "pull_request" ]]; then
-            head_branch="$(jq -r '.pull_request.head.ref' "$GITHUB_EVENT_PATH")"
-            base_branch="$(jq -r '.pull_request.base.ref' "$GITHUB_EVENT_PATH")"
-          else
-            head_branch="${GITHUB_REF#refs/heads/}"
-          fi
+          head_branch="$(jq -r '.pull_request.head.ref' "$GITHUB_EVENT_PATH" | tr '[:upper:]' '[:lower:]')"
+          base_branch="$(jq -r '.pull_request.base.ref' "$GITHUB_EVENT_PATH" | tr '[:upper:]' '[:lower:]')"
 
           echo "Head branch: $head_branch"
-          if [[ -n "$base_branch" ]]; then
-            echo "Base branch: $base_branch"
-          fi
+          echo "Base branch: $base_branch"
 
           invalid() {
             echo "ERROR: $1"
@@ -71,31 +61,27 @@ jobs:
           }
 
           # Regla 1: Nombre de branches válidos
-          if [[ "$head_branch" != "main" && "$head_branch" != "develop" && "$head_branch" != "Testing" && "$head_branch" != "testing" && ! "$head_branch" =~ ^feature[a-zA-Z0-9_-]+$ ]]; then
-            invalid "Las ramas válidas son main, develop, Testing o deben comenzar con 'feature' seguido de un nombre de módulo, por ejemplo feature-usuario o featureCarrito."
+          if [[ "$head_branch" != "main" && \
+                "$head_branch" != "develop" && \
+                "$head_branch" != "testing" && \
+                ! "$head_branch" =~ ^feature(/[a-z0-9][a-zA-Z0-9_-]+|-[a-z0-9][a-zA-Z0-9_-]+|[a-z][a-zA-Z0-9_-]+)$ ]]; then
+            invalid "Nombre de rama inválido: '$head_branch'. Las ramas deben ser main, develop, testing o seguir uno de estos formatos: feature/nombre (mín. 2 chars), feature-nombre (mín. 2 chars), featureNombre (mín. 2 chars tras el prefijo)."
           fi
 
           # Regla 2 y 3: No permitir merge directo de feature a main; sólo a develop o testing
-          if [[ "$event_name" == "pull_request" && "$head_branch" =~ ^feature ]]; then
+          if [[ "$head_branch" =~ ^feature ]]; then
             if [[ "$base_branch" == "main" ]]; then
-              invalid "No se permite merge directo de una rama feature a main. Debe hacerse a develop o testing primero."
+              invalid "No se permite merge directo de una rama feature a main. Debe pasar por develop o testing primero."
             fi
-            if [[ "$base_branch" != "develop" && "$base_branch" != "Testing" && "$base_branch" != "testing" ]]; then
-              invalid "Las ramas feature sólo pueden hacer merge a develop o testing. Base actual: $base_branch."
+            if [[ "$base_branch" != "develop" && "$base_branch" != "testing" ]]; then
+              invalid "Las ramas feature solo pueden hacer merge a develop o testing. Base actual: '$base_branch'."
             fi
           fi
 
           # Regla 4: Develop sólo puede hacer merge a main
-          if [[ "$event_name" == "pull_request" && "$head_branch" == "develop" ]]; then
+          if [[ "$head_branch" == "develop" ]]; then
             if [[ "$base_branch" != "main" ]]; then
               invalid "La rama develop sólo puede hacer merge a main. Base actual: $base_branch."
-            fi
-          fi
-
-          # Regla adicional: Testing sólo puede hacer merge a develop
-          if [[ "$event_name" == "pull_request" && ("$head_branch" == "Testing" || "$head_branch" == "testing") ]]; then
-            if [[ "$base_branch" != "develop" ]]; then
-              invalid "La rama Testing sólo puede hacer merge a develop. Base actual: $base_branch."
             fi
           fi
 

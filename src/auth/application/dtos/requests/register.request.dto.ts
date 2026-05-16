@@ -6,6 +6,8 @@ export interface RegisterInputDto {
     cedula: string;
     birthday: Date;
     gender: string;
+    roleId: string;
+    avatar?:string;
     middleName?: string;
     secondName?: string;
     //idPostalZone: string;
