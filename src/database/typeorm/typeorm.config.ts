@@ -15,6 +15,7 @@ import { ParishEntity } from '../../config/location/parish/infrastructure/databa
 import { BrandEntity } from '../../config/vehicle/brand/infrastructure/database/psql/typeorm/entities/brand.typeorm.entity';
 import { ModelEntity } from '../../config/vehicle/model/infrastructure/database/psql/typeorm/entities/model.typeorm.entity';
 import { VehicleEntity } from '../../vehicle/infrastructure/database/psql/typeorm/entities/vehicle.typeorm.entity';
+import { VehicleRepairEntity } from '../../vehicleRepair/infrastructure/database/psql/typeorm/entities/vehicleRepair.typeorm.entity';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -37,8 +38,9 @@ export const AppDataSource = new DataSource({
     BrandEntity,
     ModelEntity,
     VehicleEntity,
+    VehicleRepairEntity,
   ],
   migrations: ['src/database/typeorm/migrations/*.ts'],
-  synchronize: false,
+  synchronize: true,
   logging: ['error'],
 });

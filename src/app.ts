@@ -12,6 +12,7 @@ import modelRouter from './config/vehicle/model/infrastructure/http/routers/mode
 import vehicleRouter from './vehicle/infrastructure/http/routers/vehicle.route';
 import roleRouter from './role/infrastructure/http/routers/role.route';
 import permissionRouter from './permission/infrastructure/http/routers/permission.route';
+import vehicleRepairRouter from './vehicleRepair/infrastructure/http/routers/vehicleRepair.route';
 
 
 const app: Application = express();
@@ -22,16 +23,18 @@ app.use(httpLogger);
 app.use('/auth', authRouter);
 
 //authenticate global: Significa que authenticate se ejecuta antes de cualquier ruta de cualquier módulo.
-app.use('/roles', roleRouter);
-app.use('/permissions', permissionRouter);
-app.use('/countries', authenticate, countryRouter);
-app.use('/states', authenticate, stateRouter);
-app.use('/parishes', ParishRouter);
-app.use('/persons', personRouter);
+app.use('/api/v1/roles', roleRouter);
+app.use('/api/v1/permissions', permissionRouter);
+app.use('/api/v1/countries', authenticate, countryRouter);
+app.use('/api/v1/states', authenticate, stateRouter);
+app.use('/api/v1/parishes', ParishRouter);
+app.use('/api/v1/persons', personRouter);
 
 app.use('/api/v1/brands', brandRouter);
 app.use('/api/v1/models', modelRouter);
 app.use('/api/v1/vehicles', vehicleRouter);
+
+app.use('/api/v1/vehicle-repairs', vehicleRepairRouter);
 
 app.use(errorHandler);
 
